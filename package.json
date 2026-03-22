@@ -1,0 +1,17 @@
+{
+  "name": "arena",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Benchmarking, comparing, and visualizing AI agent capabilities",
+  "scripts": {
+    "dev": "pnpm --filter web-ui dev",
+    "build": "pnpm --filter web-ui build",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=10"
+  }
+}
