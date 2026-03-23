@@ -5,12 +5,12 @@
  * produce identical results from the same JSONL input.
  */
 
-import type { RoundResult, CompetitorStanding } from './index.js';
+import type { RoundResult, CompetitorStanding, DivergenceSignal } from './index.js';
 
 /** Round-level divergence record. */
 export interface Divergence {
   round_id: string;
-  divergence_signal: string;
+  divergence_signal: DivergenceSignal;
   spread: number;
 }
 
@@ -183,7 +183,7 @@ export function computeDivergences(entries: RoundResult[]): Divergence[] {
     const roundEntries = byRound.get(roundId)!;
     const signals = roundEntries
       .map(e => e.divergence_signal)
-      .filter((s): s is string => s != null);
+      .filter((s): s is DivergenceSignal => s != null);
     if (signals.length === 0) continue;
 
     const totals = roundEntries.map(e => e.total!);

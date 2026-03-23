@@ -10,8 +10,6 @@
 #
 # Exit 0 if all pass, 1 on any failure.
 
-set -e
-
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 RESULTS=""

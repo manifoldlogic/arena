@@ -5,8 +5,6 @@
 # 2. Aggregates pass/fail
 # Exit 0 if all pass, 1 on any failure.
 
-set -e
-
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
