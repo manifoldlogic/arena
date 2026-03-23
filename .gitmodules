@@ -1,0 +1,12 @@
+[submodule "codebases/django"]
+	path = codebases/django
+	url = https://github.com/django/django
+	shallow = true
+[submodule "codebases/fastapi"]
+	path = codebases/fastapi
+	url = https://github.com/tiangolo/fastapi
+	shallow = true
+[submodule "codebases/mattermost-webapp"]
+	path = codebases/mattermost-webapp
+	url = https://github.com/mattermost/mattermost-webapp.git
+	shallow = true
