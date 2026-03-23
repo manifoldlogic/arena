@@ -26,6 +26,20 @@ export const COMPETITOR_SPECS: CompetitorSpec[] = [
     paradigm: 'iterative-grep',
     model: 'claude-haiku-4-5-20251001',
     tools: ['Grep', 'Glob', 'Read'],
-    performance_budget: { max_calls: 150, max_time_s: 400 },
+    performance_budget: { max_calls: 80, max_time_s: 600 },
+  },
+  {
+    name: 'maproom-skill',
+    paradigm: 'skill-based',
+    model: 'claude-opus-4-20250514',
+    tools: ['Bash', 'Grep', 'Glob', 'Read'],
+    performance_budget: { max_calls: 50, max_time_s: 180 },
+  },
+  {
+    name: 'ast-grep',
+    paradigm: 'structural-ast',
+    model: 'claude-haiku-4-5-20251001',
+    tools: ['Bash', 'Grep', 'Glob', 'Read'],
+    performance_budget: { max_calls: 20, max_time_s: 120 },
   },
 ];
