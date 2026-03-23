@@ -60,6 +60,18 @@ Total number of tool invocations made during the round.
 
 Total wall-clock seconds elapsed from round start to completion.
 
+## Query Difficulty Tiers
+
+Each round query is classified into one of three difficulty tiers. Difficulty affects expected score distributions and divergence interpretation.
+
+| Tier | Label | Description | Expected Divergence |
+|------|-------|-------------|---------------------|
+| `breadth` | Breadth | Architectural surveys requiring wide coverage across modules, layers, or subsystems. Tests the competitor's ability to navigate and summarize large surface areas. | Gray — scores tend to converge since the information is broadly accessible. |
+| `depth` | Depth | Reasoning from limited evidence, requiring inference about design intent, hidden constraints, or non-obvious relationships. Tests analytical depth over coverage. | Yellow/Signal — scores diverge as competitors differ in reasoning quality. |
+| `constrained` | Constrained | Resource-limited queries where tool-call budgets or time pressure force strategic trade-offs. Tests efficiency and prioritization under pressure. | Variable — tests strategy under pressure; divergence depends on how well competitors adapt. |
+
+The `query_difficulty` field is optional on `RoundResult`. When present, it enables difficulty-aware analysis (e.g., filtering rounds by tier, normalizing divergence expectations).
+
 ## Methodological Constraints
 
 ### Judge Model Disclosure

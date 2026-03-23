@@ -8,6 +8,7 @@
 export type RoundType = 'regular' | 'bridge' | 'calibration';
 export type Source = 'agent' | 'score';
 export type DivergenceSignal = 'gray' | 'yellow' | 'signal';
+export type QueryDifficulty = 'breadth' | 'depth' | 'constrained';
 
 export type QueryCategory =
   | 'flow'
@@ -36,6 +37,7 @@ export interface RoundResult {
   codebase: string;
   phase: number;
   query_category?: QueryCategory;
+  query_difficulty?: QueryDifficulty;
   query_text?: string;
 
   // Judged quality (required for source="score")
