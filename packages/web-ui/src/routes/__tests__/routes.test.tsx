@@ -1,8 +1,32 @@
 import { screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach, beforeEach } from 'vitest';
 import { renderWithRouter } from '@/test/test-utils';
+import { mockFetchSuccess } from '@/test/mocks/handlers';
+
+// Mock EventSource globally
+class MockEventSource {
+  onopen: (() => void) | null = null;
+  onerror: (() => void) | null = null;
+  close() {}
+  addEventListener() {}
+  removeEventListener() {}
+}
+Object.defineProperty(globalThis, 'EventSource', {
+  writable: true,
+  value: MockEventSource,
+});
 
 describe('Route rendering', () => {
+  let cleanup: () => void;
+
+  beforeEach(() => {
+    cleanup = mockFetchSuccess();
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
   it('renders Overview at /', async () => {
     renderWithRouter(['/']);
     expect(

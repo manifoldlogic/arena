@@ -2,10 +2,17 @@ import { Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/hooks/use-theme';
 import { useCompetitionData } from '@/hooks/use-competition-data';
 import { ConnectionStatus } from '@/components/connection-status';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export function Header() {
   const { resolvedTheme, setTheme } = useTheme();
-  const { sseConnected, sseReconnecting } = useCompetitionData();
+  const { competition, sseConnected, sseReconnecting } = useCompetitionData();
 
   return (
     <header className="flex h-14 items-center justify-between border-b border-border bg-card px-6">
@@ -16,9 +23,19 @@ export function Header() {
         </span>
       </div>
 
-      <div className="flex items-center gap-2">
-        {/* Competition selector placeholder — wired in Phase 3 */}
-        <div id="competition-selector-slot" />
+      <div className="flex items-center gap-3">
+        {competition && (
+          <Select defaultValue={competition.competition}>
+            <SelectTrigger className="h-8 w-44 text-xs" aria-label="Select competition">
+              <SelectValue placeholder="Competition" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={competition.competition}>
+                {competition.competition}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        )}
 
         <ConnectionStatus
           connected={sseConnected}

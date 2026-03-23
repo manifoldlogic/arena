@@ -7,13 +7,7 @@ type EventHandler = (event: MessageEvent) => void;
 type OpenHandler = () => void;
 type ErrorHandler = () => void;
 
-let mockES: {
-  onopen: OpenHandler | null;
-  onerror: ErrorHandler | null;
-  close: ReturnType<typeof vi.fn>;
-  addEventListener: ReturnType<typeof vi.fn>;
-  listeners: Map<string, EventHandler>;
-};
+let mockES: MockEventSource;
 
 class MockEventSource {
   onopen: OpenHandler | null = null;

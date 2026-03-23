@@ -1,5 +1,6 @@
 import type { RouteObject } from 'react-router-dom';
 import { AppShell } from '@/components/layout/app-shell';
+import { RouteError } from '@/components/route-error';
 import { OverviewView } from './views/overview';
 import { StandingsView } from './views/standings';
 import { RoundsView } from './views/rounds';
@@ -12,6 +13,7 @@ export const routes: RouteObject[] = [
   {
     path: '/',
     element: <AppShell />,
+    errorElement: <RouteError />,
     children: [
       { index: true, element: <OverviewView /> },
       { path: 'standings', element: <StandingsView /> },
