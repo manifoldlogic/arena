@@ -2,6 +2,7 @@ import { useHeadToHead } from '@/hooks/useHeadToHead';
 import { DimensionRadar } from '@/components/charts/DimensionRadar';
 import { RoundMarginChart } from '@/components/rounds/RoundMarginChart';
 import { CategoryMatrix } from '@/components/rounds/CategoryMatrix';
+import { ParadigmIdentityPanel } from '@/components/rounds/ParadigmIdentityPanel';
 import { getCompetitorColor } from '@/lib/competitor-colors';
 
 export function HeadToHeadPage() {
@@ -56,6 +57,9 @@ export function HeadToHeadPage() {
         <p className="text-sm text-muted-foreground">No shared rounds between these competitors.</p>
       ) : (
         <>
+          {/* Paradigm Identity */}
+          <ParadigmIdentityPanel competitorA={competitorA} competitorB={competitorB} />
+
           {/* Summary Stats */}
           <div className="grid grid-cols-2 gap-4">
             {[
