@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import { useCompetitionData } from '@/hooks/use-competition-data';
 import {
   computeDivergenceMatrix,
+  computeDiscriminationStatus,
   computeDriftTimeline,
   computeClosestCalls,
   computeDimensionTotals,
@@ -16,6 +17,7 @@ import { ClosestCallsTable } from '@/components/charts/ClosestCallsTable';
 import { DimensionStackedAreas } from '@/components/charts/DimensionStackedAreas';
 import { CategoryHeatmap } from '@/components/charts/CategoryHeatmap';
 import { CrossSeriesFacets } from '@/components/charts/CrossSeriesFacets';
+import { DroughtIndicator } from '@/components/charts/DroughtIndicator';
 
 export function AnalyticsPage() {
   const { rounds } = useCompetitionData();
@@ -26,6 +28,7 @@ export function AnalyticsPage() {
   );
 
   const divergence = useMemo(() => computeDivergenceMatrix(rounds), [rounds]);
+  const discrimination = useMemo(() => computeDiscriminationStatus(rounds), [rounds]);
   const drift = useMemo(
     () =>
       competitors.length >= 2
@@ -55,7 +58,8 @@ export function AnalyticsPage() {
       {/* FR-1: Divergence Heatmap */}
       <section>
         <h3 className="text-base font-medium mb-3">Divergence Heatmap</h3>
-        <div className="overflow-x-auto rounded-lg border bg-card p-4">
+        <DroughtIndicator data={discrimination} />
+        <div className="overflow-x-auto rounded-lg border bg-card p-4 mt-3">
           <DivergenceHeatmap data={divergence} />
         </div>
       </section>
