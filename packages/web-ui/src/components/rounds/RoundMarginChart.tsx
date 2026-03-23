@@ -19,7 +19,7 @@ interface RoundMarginChartProps {
 export function RoundMarginChart({ margins, className }: RoundMarginChartProps) {
   if (margins.length === 0) {
     return (
-      <p className="text-sm text-slate-500 text-center py-8">
+      <p className="text-sm text-muted-foreground text-center py-8">
         No shared rounds to compare.
       </p>
     );
@@ -34,21 +34,24 @@ export function RoundMarginChart({ margins, className }: RoundMarginChartProps) 
     <div className={className}>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={data} margin={{ top: 10, right: 20, bottom: 40, left: 20 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+          <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
           <XAxis
             dataKey="roundId"
-            tick={{ fontSize: 11, fill: '#64748b' }}
+            tick={{ fontSize: 11 }}
+            className="fill-muted-foreground"
             angle={-30}
             textAnchor="end"
             height={60}
           />
           <YAxis
-            tick={{ fontSize: 11, fill: '#64748b' }}
+            tick={{ fontSize: 11 }}
+            className="fill-muted-foreground"
             label={{
               value: 'Score Margin',
               angle: -90,
               position: 'insideLeft',
-              style: { fontSize: 12, fill: '#94a3b8' },
+              style: { fontSize: 12 },
+              className: 'fill-muted-foreground',
             }}
           />
           <Tooltip
@@ -58,7 +61,7 @@ export function RoundMarginChart({ margins, className }: RoundMarginChartProps) 
             ]}
             labelFormatter={(label: string) => `Round: ${label}`}
           />
-          <ReferenceLine y={0} stroke="#94a3b8" strokeWidth={1} />
+          <ReferenceLine y={0} className="stroke-muted-foreground" strokeWidth={1} />
           <Bar dataKey="margin" radius={[4, 4, 0, 0]}>
             {data.map((entry, index) => (
               <Cell
@@ -69,7 +72,7 @@ export function RoundMarginChart({ margins, className }: RoundMarginChartProps) 
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-      <div className="flex justify-center gap-6 mt-2 text-xs text-slate-500">
+      <div className="flex justify-center gap-6 mt-2 text-xs text-muted-foreground">
         <span>
           <span className="inline-block w-3 h-3 rounded bg-indigo-500 mr-1 align-middle" />
           {margins[0]?.competitorA} leads

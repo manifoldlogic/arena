@@ -65,14 +65,14 @@ export function DriftTimeline({ data }: Props) {
           <Line
             type="monotone"
             dataKey="delta"
-            stroke="hsl(221, 83%, 53%)"
+            stroke="hsl(var(--primary))"
             strokeWidth={2}
             dot={false}
           />
           <Line
             type="monotone"
             dataKey="rawDelta"
-            stroke="hsl(221, 83%, 53%)"
+            stroke="hsl(var(--primary))"
             strokeWidth={1}
             strokeDasharray="3 3"
             dot={false}
@@ -80,7 +80,7 @@ export function DriftTimeline({ data }: Props) {
           />
           <Scatter
             dataKey="anomalyDelta"
-            fill="hsl(0, 75%, 60%)"
+            fill="hsl(var(--destructive))"
             shape="diamond"
           />
         </ComposedChart>

@@ -12,14 +12,14 @@ export function ScoreComparisonBar({ results, maxValue = 10 }: ScoreComparisonBa
   const scored = results.filter((r) => r.total != null);
 
   if (scored.length === 0) {
-    return <p className="text-sm text-slate-500">No scored results available.</p>;
+    return <p className="text-sm text-muted-foreground">No scored results available.</p>;
   }
 
   return (
     <div className="space-y-4">
       {DIMENSIONS.map((dim) => (
         <div key={dim}>
-          <div className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
             {dim}
           </div>
           <div className="space-y-1">
@@ -30,14 +30,14 @@ export function ScoreComparisonBar({ results, maxValue = 10 }: ScoreComparisonBa
 
               return (
                 <div key={r.competitor} className="flex items-center gap-2">
-                  <span className="text-xs text-slate-600 w-24 truncate">{r.competitor}</span>
-                  <div className="flex-1 bg-slate-100 rounded-full h-4 relative">
+                  <span className="text-xs text-muted-foreground w-24 truncate">{r.competitor}</span>
+                  <div className="flex-1 bg-muted rounded-full h-4 relative">
                     <div
                       className="h-4 rounded-full transition-all duration-300"
                       style={{ width: `${pct}%`, backgroundColor: color }}
                     />
                   </div>
-                  <span className="text-xs font-mono text-slate-700 w-6 text-right">
+                  <span className="text-xs font-mono text-foreground w-6 text-right">
                     {value}
                   </span>
                 </div>
@@ -49,7 +49,7 @@ export function ScoreComparisonBar({ results, maxValue = 10 }: ScoreComparisonBa
 
       {/* Total */}
       <div>
-        <div className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
           Total
         </div>
         <div className="space-y-1">
@@ -60,14 +60,14 @@ export function ScoreComparisonBar({ results, maxValue = 10 }: ScoreComparisonBa
 
             return (
               <div key={r.competitor} className="flex items-center gap-2">
-                <span className="text-xs text-slate-600 w-24 truncate">{r.competitor}</span>
-                <div className="flex-1 bg-slate-100 rounded-full h-4 relative">
+                <span className="text-xs text-muted-foreground w-24 truncate">{r.competitor}</span>
+                <div className="flex-1 bg-muted rounded-full h-4 relative">
                   <div
                     className="h-4 rounded-full transition-all duration-300"
                     style={{ width: `${pct}%`, backgroundColor: color }}
                   />
                 </div>
-                <span className="text-xs font-mono text-slate-700 w-6 text-right">
+                <span className="text-xs font-mono text-foreground w-6 text-right">
                   {value}
                 </span>
               </div>

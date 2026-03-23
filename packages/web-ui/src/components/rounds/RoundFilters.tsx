@@ -32,7 +32,7 @@ export function RoundFilters({ filtersState, groups }: RoundFiltersProps) {
   return (
     <div className="flex flex-wrap items-center gap-3">
       <select
-        className="rounded border border-slate-300 px-2 py-1.5 text-sm bg-white"
+        className="rounded border border-input px-2 py-1.5 text-sm bg-background"
         value={filters.codebase ?? ''}
         onChange={(e) => setFilter('codebase', e.target.value || null)}
       >
@@ -45,7 +45,7 @@ export function RoundFilters({ filtersState, groups }: RoundFiltersProps) {
       </select>
 
       <select
-        className="rounded border border-slate-300 px-2 py-1.5 text-sm bg-white"
+        className="rounded border border-input px-2 py-1.5 text-sm bg-background"
         value={filters.roundType ?? ''}
         onChange={(e) =>
           setFilter('roundType', (e.target.value || null) as typeof filters.roundType)
@@ -60,7 +60,7 @@ export function RoundFilters({ filtersState, groups }: RoundFiltersProps) {
       </select>
 
       <select
-        className="rounded border border-slate-300 px-2 py-1.5 text-sm bg-white"
+        className="rounded border border-input px-2 py-1.5 text-sm bg-background"
         value={filters.category ?? ''}
         onChange={(e) =>
           setFilter('category', (e.target.value || null) as typeof filters.category)
@@ -75,7 +75,7 @@ export function RoundFilters({ filtersState, groups }: RoundFiltersProps) {
       </select>
 
       <select
-        className="rounded border border-slate-300 px-2 py-1.5 text-sm bg-white"
+        className="rounded border border-input px-2 py-1.5 text-sm bg-background"
         value={filters.winner ?? ''}
         onChange={(e) => setFilter('winner', e.target.value || null)}
       >
@@ -89,7 +89,7 @@ export function RoundFilters({ filtersState, groups }: RoundFiltersProps) {
 
       {hasActiveFilters && (
         <button
-          className="text-sm text-slate-500 hover:text-slate-700 underline"
+          className="text-sm text-muted-foreground hover:text-foreground underline"
           onClick={clearFilters}
         >
           Clear filters

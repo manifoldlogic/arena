@@ -20,10 +20,10 @@ export function HeadToHeadPage() {
     <div className="space-y-8">
       {/* Header + Competitor Selectors */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Head-to-Head Comparison</h1>
+        <h1 className="text-2xl font-bold text-foreground">Head-to-Head Comparison</h1>
         <div className="flex flex-wrap items-center gap-3 mt-4">
           <select
-            className="rounded border border-slate-300 px-3 py-1.5 text-sm bg-white"
+            className="rounded border border-input px-3 py-1.5 text-sm bg-background"
             value={competitorA}
             onChange={(e) => setCompetitors(e.target.value, competitorB)}
           >
@@ -34,10 +34,10 @@ export function HeadToHeadPage() {
             ))}
           </select>
 
-          <span className="text-slate-400 font-medium">vs</span>
+          <span className="text-muted-foreground font-medium">vs</span>
 
           <select
-            className="rounded border border-slate-300 px-3 py-1.5 text-sm bg-white"
+            className="rounded border border-input px-3 py-1.5 text-sm bg-background"
             value={competitorB}
             onChange={(e) => setCompetitors(competitorA, e.target.value)}
           >
@@ -53,7 +53,7 @@ export function HeadToHeadPage() {
       {competitorA === competitorB ? (
         <p className="text-sm text-amber-600">Select two different competitors to compare.</p>
       ) : !averages ? (
-        <p className="text-sm text-slate-500">No shared rounds between these competitors.</p>
+        <p className="text-sm text-muted-foreground">No shared rounds between these competitors.</p>
       ) : (
         <>
           {/* Summary Stats */}
@@ -64,18 +64,18 @@ export function HeadToHeadPage() {
             ].map(({ label, avg, color }) => (
               <div
                 key={label}
-                className="rounded-lg border border-slate-200 p-4"
+                className="rounded-lg border border-border p-4"
                 style={{ borderLeftColor: color, borderLeftWidth: 4 }}
               >
-                <div className="text-sm font-medium text-slate-600">{label}</div>
-                <div className="text-3xl font-bold text-slate-900 mt-1">
+                <div className="text-sm font-medium text-muted-foreground">{label}</div>
+                <div className="text-3xl font-bold text-foreground mt-1">
                   {avg.total.toFixed(1)}
                 </div>
-                <div className="text-xs text-slate-500 mt-1">
+                <div className="text-xs text-muted-foreground mt-1">
                   P: {avg.precision.toFixed(1)} / R: {avg.recall.toFixed(1)} / I:{' '}
                   {avg.insight.toFixed(1)}
                 </div>
-                <div className="text-xs text-slate-400 mt-0.5">
+                <div className="text-xs text-muted-foreground mt-0.5">
                   across {averages.roundCount} rounds
                 </div>
               </div>
@@ -84,7 +84,7 @@ export function HeadToHeadPage() {
 
           {/* Radar Overlay */}
           <section>
-            <h2 className="text-lg font-semibold text-slate-800 mb-4">
+            <h2 className="text-lg font-semibold text-foreground mb-4">
               Averaged Dimension Radar
             </h2>
             <DimensionRadar series={radarSeries} />
@@ -92,7 +92,7 @@ export function HeadToHeadPage() {
 
           {/* Margin Chart */}
           <section>
-            <h2 className="text-lg font-semibold text-slate-800 mb-4">
+            <h2 className="text-lg font-semibold text-foreground mb-4">
               Per-Round Score Margins
             </h2>
             <RoundMarginChart margins={margins} />
@@ -100,7 +100,7 @@ export function HeadToHeadPage() {
 
           {/* Category Matrix */}
           <section>
-            <h2 className="text-lg font-semibold text-slate-800 mb-4">
+            <h2 className="text-lg font-semibold text-foreground mb-4">
               Category Performance
             </h2>
             <CategoryMatrix
