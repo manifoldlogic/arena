@@ -1,0 +1,31 @@
+{
+  "codebases": [
+    {
+      "name": "mattermost-webapp",
+      "submodule_path": "codebases/mattermost-webapp",
+      "remote_url": "https://github.com/mattermost/mattermost-webapp.git",
+      "pinned_commit": "62587e140da7c7c52f63ebd05bfe315a9ac4f2de",
+      "language": "TypeScript/React",
+      "approx_files": 4500,
+      "phases": [2]
+    },
+    {
+      "name": "django",
+      "submodule_path": "codebases/django",
+      "remote_url": "https://github.com/django/django",
+      "pinned_commit": "d9adcfbd5e3ba5859cc0ce6e2e67f533efbc8f9b",
+      "language": "Python",
+      "approx_files": 5200,
+      "phases": [1]
+    },
+    {
+      "name": "fastapi",
+      "submodule_path": "codebases/fastapi",
+      "remote_url": "https://github.com/tiangolo/fastapi",
+      "pinned_commit": "64feaec80244578bbdabe51e866bcfad1df8b708",
+      "language": "Python",
+      "approx_files": 2800,
+      "phases": [1]
+    }
+  ]
+}

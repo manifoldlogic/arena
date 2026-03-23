@@ -1,0 +1,18 @@
+{
+  "competitors": [
+    {
+      "name": "maproom",
+      "paradigm": "indexed-search",
+      "model": "claude-haiku-4-5-20251001",
+      "tools": ["crewchief-maproom"],
+      "performance_budget": { "max_calls": 100, "max_time_s": 300 }
+    },
+    {
+      "name": "explore",
+      "paradigm": "iterative-grep",
+      "model": "claude-haiku-4-5-20251001",
+      "tools": ["Grep", "Glob", "Read"],
+      "performance_budget": { "max_calls": 150, "max_time_s": 400 }
+    }
+  ]
+}
