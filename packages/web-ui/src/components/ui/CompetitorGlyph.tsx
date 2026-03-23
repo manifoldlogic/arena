@@ -48,7 +48,34 @@ function glyphFor(competitor: string, color: string) {
         </g>
       );
 
-    // fallback — diamond
+    // maproom-skill — diamond
+    case 'maproom-skill':
+      return (
+        <rect
+          x={3}
+          y={3}
+          width={10}
+          height={10}
+          rx={2}
+          stroke={color}
+          strokeWidth={1.5}
+          fill="none"
+          transform="rotate(45 8 8)"
+        />
+      );
+
+    // ast-grep — tree
+    case 'ast-grep':
+      return (
+        <g stroke={color} strokeWidth={1.5} strokeLinecap="round" fill="none">
+          {/* trunk */}
+          <line x1={8} y1={10} x2={8} y2={14} />
+          {/* canopy */}
+          <polygon points="8,2 3,10 13,10" stroke={color} strokeWidth={1.5} fill="none" />
+        </g>
+      );
+
+    // fallback — rounded square
     default:
       return (
         <rect
