@@ -163,14 +163,49 @@ describe("SSE", () => {
   });
 });
 
+describe("standings response shape", () => {
+  test("includes avg field computed correctly", async () => {
+    const standings = await getJson<
+      Array<{ competitor: string; total: number; avg: number; wins: number; ties: number; losses: number; rounds: number }>
+    >("/api/standings");
+    const maproom = standings.find((s) => s.competitor === "maproom")!;
+    expect(maproom.avg).toBe(11.75);
+    expect(maproom.total).toBe(47);
+    expect(maproom.wins).toBe(4);
+    expect(maproom.ties).toBe(0);
+    expect(maproom.losses).toBe(0);
+    expect(maproom.rounds).toBe(4);
+  });
+});
+
+describe("edge cases", () => {
+  test("GET /api/standings/unknown-codebase returns empty array", async () => {
+    const standings = await getJson<unknown[]>("/api/standings/unknown-codebase");
+    expect(standings).toEqual([]);
+  });
+
+  test("GET /api/categories/unknown-category returns empty array", async () => {
+    const standings = await getJson<unknown[]>("/api/categories/unknown-category");
+    expect(standings).toEqual([]);
+  });
+});
+
 describe("error handling", () => {
   test("GET /unknown returns 404", async () => {
     const res = await get("/unknown");
     expect(res.status).toBe(404);
   });
 
-  test("CORS headers present", async () => {
+  test("CORS headers present on JSON responses", async () => {
     const res = await get("/api/health");
     expect(res.headers.get("Access-Control-Allow-Origin")).toBe("*");
   });
+
+  test("OPTIONS preflight returns 204 with CORS headers", async () => {
+    const res = await fetch(`${baseUrl}/api/standings`, { method: "OPTIONS" });
+    expect(res.status).toBe(204);
+    expect(res.headers.get("Access-Control-Allow-Origin")).toBe("*");
+    expect(res.headers.get("Access-Control-Allow-Methods")).toContain("GET");
+  });
 });
+
