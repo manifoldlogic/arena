@@ -12,7 +12,7 @@ import {
 
 export function Header() {
   const { resolvedTheme, setTheme } = useTheme();
-  const { competition, sseConnected, sseReconnecting } = useCompetitionData();
+  const { competition, sseConnected, sseReconnecting, sseEventCount } = useCompetitionData();
 
   return (
     <header className="flex h-14 items-center justify-between border-b border-border bg-card px-6">
@@ -40,6 +40,7 @@ export function Header() {
         <ConnectionStatus
           connected={sseConnected}
           reconnecting={sseReconnecting}
+          eventCount={sseEventCount}
         />
 
         <button

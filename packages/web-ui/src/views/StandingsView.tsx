@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { CompetitorStanding } from '@arena/schemas';
 import {
   computeStandings,
@@ -185,11 +186,21 @@ export function StandingsView() {
             </button>
           </div>
         </div>
-        <CodebaseBreakdown
-          data={breakdown}
-          competitors={competitors}
-          colorMap={colorMap}
-        />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={breakdownMode}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.25, ease: 'easeInOut' }}
+          >
+            <CodebaseBreakdown
+              data={breakdown}
+              competitors={competitors}
+              colorMap={colorMap}
+            />
+          </motion.div>
+        </AnimatePresence>
       </section>
 
       {/* Win/Tie/Loss Donuts + Efficiency Scatter side by side */}
