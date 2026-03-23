@@ -54,6 +54,7 @@ export interface RoundResult {
   source: Source;
   round_winner?: string | null;
   judge_notes?: string;
+  next_query_hint?: string;
   divergence_signal?: DivergenceSignal;
   is_calibration: boolean;
 
