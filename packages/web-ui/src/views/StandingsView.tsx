@@ -5,6 +5,7 @@ import {
   computeCodebaseBreakdown,
   computeWinTieLoss,
   computeEfficiencyScatter,
+  computeStreaks,
 } from '@/lib/transforms';
 import {
   StandingsTable,
@@ -33,6 +34,7 @@ export function StandingsView() {
   );
   const winTieLoss = useMemo(() => computeWinTieLoss(standings), [standings]);
   const scatter = useMemo(() => computeEfficiencyScatter(rounds), [rounds]);
+  const streaks = useMemo(() => computeStreaks(rounds), [rounds]);
 
   // Build color map from CSS variables (falls back to static colors in SSR)
   const colorMap = useMemo(() => {
@@ -49,7 +51,7 @@ export function StandingsView() {
       {/* Standings Table */}
       <section>
         <h2 className="mb-3 text-lg font-semibold">Overall Standings</h2>
-        <StandingsTable standings={standings} />
+        <StandingsTable standings={standings} streaks={streaks} />
       </section>
 
       {/* Score Timeline */}
