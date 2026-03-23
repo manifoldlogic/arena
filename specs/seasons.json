@@ -1,0 +1,26 @@
+{
+  "seasons": [
+    {
+      "id": "s1",
+      "name": "The Mattermost Campaign",
+      "codebase": "mattermost-webapp",
+      "chapters": [
+        {
+          "id": "s1-ch1",
+          "name": "First Contact",
+          "round_range": ["R19", "R22"],
+          "theme": "Initial exploration — testing competitor approaches against a large, unfamiliar React codebase.",
+          "status": "closed"
+        },
+        {
+          "id": "s1-ch2",
+          "name": "Pattern Recognition",
+          "round_range": ["R23", "R27"],
+          "theme": "Deeper architectural queries — do competitors adapt strategy as familiarity grows?",
+          "status": "in_progress",
+          "thesis": "Structured traversal outperforms exhaustive grep as query complexity increases."
+        }
+      ]
+    }
+  ]
+}

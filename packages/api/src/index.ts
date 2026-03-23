@@ -13,6 +13,7 @@
  *   GET /api/analytics/closest        — closest calls
  *   GET /api/codebases                — list of codebases
  *   GET /api/categories               — list of query categories
+ *   GET /api/seasons                  — season & chapter data
  *   GET /api/health                   — health check
  *   GET /events                       — SSE stream (pushes on file change)
  */
@@ -34,14 +35,16 @@ import {
   getClosestCalls,
 } from "./analytics";
 import { watchFile } from "./watcher";
-import type { RoundResult } from "@arena/schemas";
+import type { RoundResult, SeasonsData } from "@arena/schemas";
 
 const DEFAULT_PORT = 3001;
 const DEFAULT_DATA_PATH = resolve(import.meta.dir, "../../../data/rounds.jsonl");
+const DEFAULT_SEASONS_PATH = resolve(import.meta.dir, "../../../specs/seasons.json");
 
 export interface ServerConfig {
   port?: number;
   dataPath?: string;
+  seasonsPath?: string;
 }
 
 export interface ServerHandle {
@@ -52,7 +55,9 @@ export interface ServerHandle {
 /** Cached parsed data, invalidated on file change. */
 let cachedScoredRounds: RoundResult[] | null = null;
 let cachedCalibrationRounds: RoundResult[] | null = null;
+let cachedSeasons: SeasonsData | null = null;
 let dataPath: string = DEFAULT_DATA_PATH;
+let seasonsPath: string = DEFAULT_SEASONS_PATH;
 
 async function loadData(): Promise<void> {
   const result = await readRoundsFile(dataPath);
@@ -68,9 +73,18 @@ function getCalRounds(): RoundResult[] {
   return cachedCalibrationRounds ?? [];
 }
 
+async function loadSeasons(): Promise<SeasonsData> {
+  if (cachedSeasons) return cachedSeasons;
+  const file = Bun.file(seasonsPath);
+  const text = await file.text();
+  cachedSeasons = JSON.parse(text) as SeasonsData;
+  return cachedSeasons;
+}
+
 function invalidateCache(): void {
   cachedScoredRounds = null;
   cachedCalibrationRounds = null;
+  cachedSeasons = null;
 }
 
 // SSE client management
@@ -217,6 +231,15 @@ async function routeRequest(req: Request): Promise<Response> {
     return json(getCategories(scored));
   }
 
+  if (path === "/api/seasons") {
+    try {
+      const seasons = await loadSeasons();
+      return json(seasons);
+    } catch {
+      return json({ error: "Seasons data not available" }, 503);
+    }
+  }
+
   return json({ error: "Not found" }, 404);
 }
 
@@ -224,6 +247,10 @@ async function routeRequest(req: Request): Promise<Response> {
 export function startServer(config?: ServerConfig): ServerHandle {
   const port = config?.port ?? parseInt(process.env.PORT ?? String(DEFAULT_PORT), 10);
   dataPath = config?.dataPath ?? process.env.DATA_PATH ?? DEFAULT_DATA_PATH;
+  seasonsPath = config?.seasonsPath ?? process.env.SEASONS_PATH ?? DEFAULT_SEASONS_PATH;
+
+  // Invalidate any stale cache from previous server instances (e.g. in tests)
+  invalidateCache();
 
   // Load data initially
   loadData().catch((err) => {
