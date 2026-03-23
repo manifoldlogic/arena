@@ -39,7 +39,7 @@ export function RoundDetailPage() {
         <Link to="/rounds" className="text-sm text-indigo-600 hover:text-indigo-800">
           &larr; All Rounds
         </Link>
-        <h1 className="text-2xl font-bold text-foreground mt-2">{group.roundId}</h1>
+        <h1 className="text-2xl font-bold tracking-tight mt-2">{group.roundId}</h1>
         <div className="flex items-center gap-3 mt-1">
           <span className="text-sm text-muted-foreground">{group.codebase}</span>
           <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">

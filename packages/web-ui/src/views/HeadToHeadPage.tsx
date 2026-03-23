@@ -20,7 +20,7 @@ export function HeadToHeadPage() {
     <div className="space-y-8">
       {/* Header + Competitor Selectors */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Head-to-Head Comparison</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Head-to-Head Comparison</h1>
         <div className="flex flex-wrap items-center gap-3 mt-4">
           <select
             className="rounded border border-input px-3 py-1.5 text-sm bg-background"
