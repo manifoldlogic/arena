@@ -17,8 +17,10 @@ import {
 } from '@/components/charts';
 import { buildColorMap } from '@/lib/chartColors';
 import { useCompetitionData } from '@/hooks/use-competition-data';
+import { maxCallsMap } from '@/lib/maxCalls';
 
 type BreakdownMode = 'codebase' | 'query_category';
+type ScoreMode = 'raw' | 'qas';
 
 function LeaderSummary({ standings }: { standings: CompetitorStanding[] }) {
   if (standings.length < 2) return null;
@@ -74,11 +76,15 @@ function LeaderSummary({ standings }: { standings: CompetitorStanding[] }) {
 
 export function StandingsView() {
   const [breakdownMode, setBreakdownMode] = useState<BreakdownMode>('codebase');
+  const [scoreMode, setScoreMode] = useState<ScoreMode>('raw');
 
   const { rounds: liveRounds } = useCompetitionData();
   const rounds = liveRounds;
 
-  const standings = useMemo(() => computeStandings(rounds), [rounds]);
+  const standings = useMemo(
+    () => computeStandings(rounds, scoreMode === 'qas' ? maxCallsMap : undefined),
+    [rounds, scoreMode],
+  );
   const competitors = useMemo(() => standings.map((s) => s.competitor), [standings]);
   const timeline = useMemo(() => computeScoreTimeline(rounds), [rounds]);
   const breakdown = useMemo(
@@ -114,7 +120,31 @@ export function StandingsView() {
 
       {/* Standings Table */}
       <section>
-        <h2 className="mb-3 text-lg font-semibold">Overall Standings</h2>
+        <div className="mb-3 flex items-center gap-3">
+          <h2 className="text-lg font-semibold">Overall Standings</h2>
+          <div className="flex rounded-md border border-border text-sm">
+            <button
+              className={`px-3 py-1 transition-colors ${
+                scoreMode === 'raw'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'hover:bg-muted'
+              }`}
+              onClick={() => setScoreMode('raw')}
+            >
+              Raw
+            </button>
+            <button
+              className={`px-3 py-1 transition-colors ${
+                scoreMode === 'qas'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'hover:bg-muted'
+              }`}
+              onClick={() => setScoreMode('qas')}
+            >
+              QAS
+            </button>
+          </div>
+        </div>
         <StandingsTable standings={standings} streaks={streaks} />
       </section>
 

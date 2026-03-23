@@ -1,4 +1,5 @@
 import type { RoundResult, CompetitorStanding } from '@arena/schemas';
+import { computeQAS } from './computeQAS';
 
 /**
  * Compute overall standings from round results.
@@ -6,8 +7,13 @@ import type { RoundResult, CompetitorStanding } from '@arena/schemas';
  * Filters to scored, non-calibration rounds, deduplicates by
  * (round_id, competitor) keeping the latest entry, then aggregates
  * per competitor.
+ *
+ * When maxCallsMap is provided, also computes aggregate QAS per competitor.
  */
-export function computeStandings(rounds: RoundResult[]): CompetitorStanding[] {
+export function computeStandings(
+  rounds: RoundResult[],
+  maxCallsMap?: Record<string, number>,
+): CompetitorStanding[] {
   // 1. Filter to scored, non-calibration rounds
   const scored = rounds.filter(
     (r) => r.source === 'score' && !r.is_calibration,
@@ -37,6 +43,15 @@ export function computeStandings(rounds: RoundResult[]): CompetitorStanding[] {
     ).length;
     const losses = results.length - wins - ties;
 
+    const maxCalls = maxCallsMap?.[competitor];
+    const qas =
+      maxCalls != null
+        ? results.reduce(
+            (sum, r) => sum + computeQAS(r.total ?? 0, r.calls, maxCalls),
+            0,
+          )
+        : undefined;
+
     standings.push({
       competitor,
       total: totalScore,
@@ -45,6 +60,7 @@ export function computeStandings(rounds: RoundResult[]): CompetitorStanding[] {
       losses,
       rounds: results.length,
       avg: results.length > 0 ? totalScore / results.length : 0,
+      qas,
     });
   }
 
