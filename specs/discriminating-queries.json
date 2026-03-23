@@ -1,0 +1,146 @@
+{
+  "version": 1,
+  "description": "Queries designed to produce yellow/signal divergence between search paradigms",
+  "queries": [
+    {
+      "id": "DQ-01",
+      "codebase": "mattermost-webapp",
+      "difficulty": "depth",
+      "terrain": "path-traversal",
+      "query": "What happens to in-flight API requests when a user's session token expires mid-request? Trace the error handling from the 401 response back to the UI.",
+      "hypothesis": "FL-001",
+      "target_divergence": "yellow"
+    },
+    {
+      "id": "DQ-02",
+      "codebase": "mattermost-webapp",
+      "difficulty": "depth",
+      "terrain": "path-traversal",
+      "query": "What would break if the WebSocket reconnection delay were reduced from 3 seconds to 0? Trace all downstream effects.",
+      "hypothesis": "FL-002",
+      "target_divergence": "signal"
+    },
+    {
+      "id": "DQ-03",
+      "codebase": "mattermost-webapp",
+      "difficulty": "depth",
+      "terrain": "breadth-scan",
+      "query": "Find every place the app makes an optimistic update (updates UI before server confirms). What rollback mechanisms exist for each?",
+      "hypothesis": "FL-002",
+      "target_divergence": "yellow"
+    },
+    {
+      "id": "DQ-04",
+      "codebase": "mattermost-webapp",
+      "difficulty": "depth",
+      "terrain": "path-traversal",
+      "query": "Under what conditions can a user see a message in channel A that was actually posted in channel B? Trace the message routing logic.",
+      "hypothesis": "FL-001",
+      "target_divergence": "signal"
+    },
+    {
+      "id": "DQ-05",
+      "codebase": "mattermost-webapp",
+      "difficulty": "depth",
+      "terrain": "path-traversal",
+      "query": "What is the maximum memory a single channel view can consume? Trace the data retained in Redux selectors for posts, reactions, files, and user profiles when viewing a channel with 10,000 messages.",
+      "hypothesis": "FL-001",
+      "target_divergence": "yellow"
+    },
+    {
+      "id": "DQ-06",
+      "codebase": "django",
+      "difficulty": "depth",
+      "terrain": "path-traversal",
+      "query": "What happens when two concurrent requests try to update the same model instance with select_for_update? Trace the locking mechanism from ORM to database backend.",
+      "hypothesis": "FL-001",
+      "target_divergence": "yellow"
+    },
+    {
+      "id": "DQ-07",
+      "codebase": "django",
+      "difficulty": "depth",
+      "terrain": "path-traversal",
+      "query": "What is the exact order that Django middleware processes a request that raises an exception in the view? Trace the unwinding through all middleware layers.",
+      "hypothesis": "FL-001",
+      "target_divergence": "yellow"
+    },
+    {
+      "id": "DQ-08",
+      "codebase": "django",
+      "difficulty": "depth",
+      "terrain": "breadth-scan",
+      "query": "Find all places Django silently swallows exceptions (catches and continues without re-raising). Are any of these dangerous?",
+      "hypothesis": "FL-002",
+      "target_divergence": "signal"
+    },
+    {
+      "id": "DQ-09",
+      "codebase": "fastapi",
+      "difficulty": "depth",
+      "terrain": "path-traversal",
+      "query": "What happens to a yield-dependency's cleanup code if the endpoint raises an HTTPException? Does the generator always get closed?",
+      "hypothesis": "FL-001",
+      "target_divergence": "yellow"
+    },
+    {
+      "id": "DQ-10",
+      "codebase": "fastapi",
+      "difficulty": "depth",
+      "terrain": "path-traversal",
+      "query": "Can a request-scoped dependency accidentally share state between concurrent requests? Trace the dependency cache lifecycle.",
+      "hypothesis": "FL-001",
+      "target_divergence": "yellow"
+    },
+    {
+      "id": "CQ-01",
+      "codebase": "mattermost-webapp",
+      "difficulty": "constrained",
+      "terrain": "point-lookup",
+      "constraint": "max 25 tool calls",
+      "query": "Using at most 25 tool calls, find the single most impactful performance bottleneck in the channel switching flow.",
+      "hypothesis": "FL-003",
+      "target_divergence": "signal"
+    },
+    {
+      "id": "CQ-02",
+      "codebase": "mattermost-webapp",
+      "difficulty": "constrained",
+      "terrain": "breadth-scan",
+      "constraint": "max 20 tool calls",
+      "query": "Using at most 20 tool calls, identify which Redux selectors are called most frequently and whether any are missing memoization.",
+      "hypothesis": "FL-003",
+      "target_divergence": "yellow"
+    },
+    {
+      "id": "CQ-03",
+      "codebase": "django",
+      "difficulty": "constrained",
+      "terrain": "point-lookup",
+      "constraint": "max 25 tool calls",
+      "query": "Using at most 25 tool calls, assess Django's CSRF protection implementation for high-impact vulnerabilities; if none are found, state that explicitly with evidence.",
+      "hypothesis": "FL-003",
+      "target_divergence": "yellow"
+    },
+    {
+      "id": "CQ-04",
+      "codebase": "fastapi",
+      "difficulty": "constrained",
+      "terrain": "point-lookup",
+      "constraint": "max 20 tool calls",
+      "query": "Using at most 20 tool calls, determine whether FastAPI's dependency injection is thread-safe for sync dependencies.",
+      "hypothesis": "FL-003",
+      "target_divergence": "yellow"
+    },
+    {
+      "id": "CQ-05",
+      "codebase": "mattermost-webapp",
+      "difficulty": "constrained",
+      "terrain": "breadth-scan",
+      "constraint": "max 15 tool calls",
+      "query": "Using at most 15 tool calls, assess main navigation components for critical accessibility (a11y) violations; if none are found, state that explicitly with evidence.",
+      "hypothesis": "FL-003",
+      "target_divergence": "signal"
+    }
+  ]
+}
