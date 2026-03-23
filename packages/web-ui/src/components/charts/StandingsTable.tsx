@@ -3,7 +3,7 @@ import type { CompetitorStanding } from '@arena/schemas';
 import type { StreakInfo } from '@/lib/transforms';
 import { cn } from '@/lib/utils';
 
-type SortKey = keyof Omit<CompetitorStanding, 'competitor'> | 'competitor';
+type SortKey = keyof Omit<CompetitorStanding, 'competitor'> | 'competitor' | 'qas';
 type SortDir = 'asc' | 'desc';
 
 interface Props {
@@ -19,14 +19,15 @@ export function StandingsTable({ standings, streaks, className }: Props) {
     for (const s of streaks) map.set(s.competitor, s);
     return map;
   }, [streaks]);
+  const hasQAS = standings.some((s) => s.qas != null);
   const [sortKey, setSortKey] = useState<SortKey>('total');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
 
   const sorted = useMemo(() => {
     const copy = [...standings];
     copy.sort((a, b) => {
-      const aVal = a[sortKey];
-      const bVal = b[sortKey];
+      const aVal = a[sortKey] ?? 0;
+      const bVal = b[sortKey] ?? 0;
       if (typeof aVal === 'string' && typeof bVal === 'string') {
         return sortDir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
       }
@@ -48,6 +49,7 @@ export function StandingsTable({ standings, streaks, className }: Props) {
   const columns: { key: SortKey; label: string; align?: 'left' | 'right' }[] = [
     { key: 'competitor', label: 'Competitor', align: 'left' },
     { key: 'total', label: 'Total' },
+    ...(hasQAS ? [{ key: 'qas' as SortKey, label: 'QAS' }] : []),
     { key: 'avg', label: 'Avg' },
     { key: 'wins', label: 'W' },
     { key: 'ties', label: 'T' },
@@ -100,6 +102,11 @@ export function StandingsTable({ standings, streaks, className }: Props) {
               <td className="px-3 py-2 text-muted-foreground">{i + 1}</td>
               <td className="px-3 py-2 font-medium">{s.competitor}</td>
               <td className="px-3 py-2 text-right font-mono font-semibold">{s.total}</td>
+              {hasQAS && (
+                <td className="px-3 py-2 text-right font-mono font-semibold text-blue-600 dark:text-blue-400">
+                  {s.qas?.toFixed(2) ?? '—'}
+                </td>
+              )}
               <td className="px-3 py-2 text-right font-mono">{s.avg.toFixed(2)}</td>
               <td className="px-3 py-2 text-right font-mono">{s.wins}</td>
               <td className="px-3 py-2 text-right font-mono">{s.ties}</td>

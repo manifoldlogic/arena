@@ -4,3 +4,4 @@ export { computeCodebaseBreakdown, type BreakdownEntry } from './computeCodebase
 export { computeWinTieLoss, type WinTieLossEntry } from './computeWinTieLoss';
 export { computeEfficiencyScatter, type ScatterPoint } from './computeEfficiencyScatter';
 export { computeStreaks, type StreakInfo } from './computeStreaks';
+export { computeEfficiencyBonus, computeQAS } from './computeQAS';

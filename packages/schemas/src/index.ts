@@ -66,6 +66,9 @@ export interface RoundResult {
   season_id?: string;
   chapter_id?: string;
 
+  // Quality-adjusted score
+  qas?: number;
+
   // Timestamps
   timestamp?: string;
   session_id?: string;
@@ -79,6 +82,7 @@ export interface CompetitorStanding {
   losses: number;
   rounds: number;
   avg: number;
+  qas?: number;
 }
 
 export interface CompetitionStatus {
