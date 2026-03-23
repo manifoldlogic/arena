@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import type { RoundGroup } from '@/lib/round-transforms';
 import type { SortField, SortDir } from '@/hooks/useRoundFilters';
 import { DivergenceBadge, DifficultyBadge } from './DivergenceBadge';
-import { getCompetitorColor } from '@/lib/competitor-colors';
+import { CompetitorChip } from '@/components/ui/CompetitorChip';
 
 interface RoundListTableProps {
   groups: RoundGroup[];
@@ -98,13 +98,7 @@ export function RoundListTable({ groups, sortField, sortDir, onSort }: RoundList
                 <td className="px-3 py-2">
                   <div className="flex gap-1.5">
                     {group.results.map((r) => (
-                      <span
-                        key={r.competitor}
-                        className="inline-block rounded px-1.5 py-0.5 text-xs text-white font-medium"
-                        style={{ backgroundColor: getCompetitorColor(r.competitor) }}
-                      >
-                        {r.competitor}
-                      </span>
+                      <CompetitorChip key={r.competitor} competitor={r.competitor} />
                     ))}
                   </div>
                 </td>
@@ -113,12 +107,7 @@ export function RoundListTable({ groups, sortField, sortDir, onSort }: RoundList
                 </td>
                 <td className="px-3 py-2">
                   {winner ? (
-                    <span
-                      className="inline-block rounded px-1.5 py-0.5 text-xs text-white font-medium"
-                      style={{ backgroundColor: getCompetitorColor(winner) }}
-                    >
-                      {winner}
-                    </span>
+                    <CompetitorChip competitor={winner} />
                   ) : (
                     <span className="text-muted-foreground">—</span>
                   )}
