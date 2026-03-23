@@ -17,7 +17,7 @@ export function RoundsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Round Analysis</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Round Analysis</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {filteredGroups.length} of {allGroups.length} rounds
         </p>

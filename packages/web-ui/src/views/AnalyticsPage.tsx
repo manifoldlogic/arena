@@ -48,71 +48,90 @@ export function AnalyticsPage() {
 
   return (
     <div className="space-y-8">
+      {/* Page Header */}
       <div>
-        <h2 className="text-xl font-semibold tracking-tight">Advanced Analytics</h2>
+        <h1 className="text-2xl font-bold tracking-tight">Analytics</h1>
         <p className="text-sm text-muted-foreground mt-1">
           Strategic insights from {totalRounds} scored rounds across {competitors.length} competitors
         </p>
       </div>
 
-      {/* FR-1: Divergence Heatmap */}
-      <section>
-        <h3 className="text-base font-medium mb-3">Divergence Heatmap</h3>
-        <DroughtIndicator data={discrimination} />
-        <div className="overflow-x-auto rounded-lg border bg-card p-4 mt-3">
-          <DivergenceHeatmap data={divergence} />
-        </div>
-      </section>
+      {/* ── Performance ──────────────────────────────────── */}
+      <div className="space-y-6">
+        <h2 className="flex items-center gap-3 text-lg font-semibold">
+          <span className="h-px flex-1 bg-border" />
+          <span>Performance</span>
+          <span className="h-px flex-1 bg-border" />
+        </h2>
 
-      {/* FR-2: Drift Detection Timeline */}
-      <section>
-        <div className="flex items-center gap-4 mb-3">
-          <h3 className="text-base font-medium">Drift Detection</h3>
-          <select
-            value={windowSize}
-            onChange={(e) => setWindowSize(Number(e.target.value))}
-            className="rounded border bg-card px-2 py-1 text-xs"
-            aria-label="Rolling window size"
-          >
-            <option value={3}>Window: 3</option>
-            <option value={5}>Window: 5</option>
-            <option value={7}>Window: 7</option>
-          </select>
-        </div>
-        {drift ? <DriftTimeline data={drift} /> : (
-          <div className="text-sm text-muted-foreground">Need at least 2 competitors for drift analysis.</div>
-        )}
-      </section>
+        {/* Divergence Heatmap */}
+        <section>
+          <h3 className="text-base font-medium mb-3">Divergence Heatmap</h3>
+          <DroughtIndicator data={discrimination} />
+          <div className="overflow-x-auto rounded-lg border bg-card p-4 mt-3">
+            <DivergenceHeatmap data={divergence} />
+          </div>
+        </section>
 
-      {/* FR-3: Cross-Series Analysis */}
-      <section>
-        <h3 className="text-base font-medium mb-3">Cross-Series Analysis</h3>
-        <div className="rounded-lg border bg-card p-4">
-          <CrossSeriesFacets rounds={rounds} />
-        </div>
-      </section>
+        {/* Drift Detection Timeline */}
+        <section>
+          <div className="flex items-center gap-4 mb-3">
+            <h3 className="text-base font-medium">Drift Detection</h3>
+            <select
+              value={windowSize}
+              onChange={(e) => setWindowSize(Number(e.target.value))}
+              className="rounded border bg-card px-2 py-1 text-xs"
+              aria-label="Rolling window size"
+            >
+              <option value={3}>Window: 3</option>
+              <option value={5}>Window: 5</option>
+              <option value={7}>Window: 7</option>
+            </select>
+          </div>
+          {drift ? <DriftTimeline data={drift} /> : (
+            <div className="text-sm text-muted-foreground">Need at least 2 competitors for drift analysis.</div>
+          )}
+        </section>
 
-      {/* FR-4: Closest Calls */}
-      <section>
-        <h3 className="text-base font-medium mb-3">Closest Calls</h3>
-        <div className="rounded-lg border bg-card p-4">
-          <ClosestCallsTable data={closestCalls} totalRounds={totalRounds} />
-        </div>
-      </section>
+        {/* Closest Calls */}
+        <section>
+          <h3 className="text-base font-medium mb-3">Closest Calls</h3>
+          <div className="rounded-lg border bg-card p-4">
+            <ClosestCallsTable data={closestCalls} totalRounds={totalRounds} />
+          </div>
+        </section>
+      </div>
 
-      {/* FR-5: Dimension Stacked Areas */}
-      <section>
-        <h3 className="text-base font-medium mb-3">Dimension Evolution</h3>
-        <DimensionStackedAreas data={dimensions} />
-      </section>
+      {/* ── Composition ──────────────────────────────────── */}
+      <div className="space-y-6">
+        <h2 className="flex items-center gap-3 text-lg font-semibold">
+          <span className="h-px flex-1 bg-border" />
+          <span>Composition</span>
+          <span className="h-px flex-1 bg-border" />
+        </h2>
 
-      {/* FR-6: Category Performance Matrix */}
-      <section>
-        <h3 className="text-base font-medium mb-3">Category Performance Matrix</h3>
-        <div className="rounded-lg border bg-card p-4 overflow-x-auto">
-          <CategoryHeatmap data={categoryMatrix} />
-        </div>
-      </section>
+        {/* Dimension Stacked Areas */}
+        <section>
+          <h3 className="text-base font-medium mb-3">Dimension Evolution</h3>
+          <DimensionStackedAreas data={dimensions} />
+        </section>
+
+        {/* Category Performance Matrix */}
+        <section>
+          <h3 className="text-base font-medium mb-3">Category Performance Matrix</h3>
+          <div className="rounded-lg border bg-card p-4 overflow-x-auto">
+            <CategoryHeatmap data={categoryMatrix} />
+          </div>
+        </section>
+
+        {/* Cross-Series Analysis */}
+        <section>
+          <h3 className="text-base font-medium mb-3">Cross-Series Analysis</h3>
+          <div className="rounded-lg border bg-card p-4">
+            <CrossSeriesFacets rounds={rounds} />
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
