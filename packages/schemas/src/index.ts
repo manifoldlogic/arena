@@ -61,6 +61,10 @@ export interface RoundResult {
   series1_scores?: BridgeScores;
   series1_baseline?: BridgeScores;
 
+  // Season / chapter classification
+  season_id?: string;
+  chapter_id?: string;
+
   // Timestamps
   timestamp?: string;
   session_id?: string;
@@ -84,4 +88,28 @@ export interface CompetitionStatus {
   status: 'pending' | 'in_progress' | 'completed';
   rounds_planned: number;
   rounds_completed: number;
+}
+
+// Season & Chapter data model
+
+export type ChapterStatus = 'closed' | 'in_progress' | 'planned';
+
+export interface Chapter {
+  id: string;
+  name: string;
+  round_range: [string, string];
+  theme: string;
+  status: ChapterStatus;
+  thesis?: string;
+}
+
+export interface Season {
+  id: string;
+  name: string;
+  codebase: string;
+  chapters: Chapter[];
+}
+
+export interface SeasonsData {
+  seasons: Season[];
 }
