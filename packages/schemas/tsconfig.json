@@ -11,6 +11,8 @@
     "isolatedModules": true,
     "noEmit": false,
     "composite": true,
+    "emitDeclarationOnly": true,
+    "outDir": "dist",
     "declaration": true,
     "declarationMap": true
   },
