@@ -457,3 +457,263 @@ export function computeDiscriminationStatus(
 
   return { status: 'drought', streak, lastSignalRound };
 }
+
+// ── Milestones ──────────────────────────────────────────────────────
+
+export interface Milestone {
+  id: string;
+  name: string;
+  description: string;
+  achieved: boolean;
+  achievedRound?: string;
+}
+
+/**
+ * Compute research milestones from round results.
+ *
+ * Returns a fixed set of 5 milestones, each checked against the data:
+ * 1. First Signal Round — spread >= 5 in any round
+ * 2. Category Domination — one competitor leads all query categories
+ * 3. Depth Query Explored — any round with query_difficulty="depth"
+ * 4. Comeback Confirmed — trailing competitor wins 3 consecutive rounds
+ * 5. Paradigm Signature Found — one competitor leads a dimension across 5+ rounds
+ */
+export function computeMilestones(rounds: RoundResult[]): Milestone[] {
+  const scored = rounds.filter((r) => r.source === 'score' && r.total != null);
+
+  return [
+    checkFirstSignalRound(scored),
+    checkCategoryDomination(scored),
+    checkDepthQueryExplored(scored),
+    checkComebackConfirmed(scored),
+    checkParadigmSignatureFound(scored),
+  ];
+}
+
+function checkFirstSignalRound(scored: RoundResult[]): Milestone {
+  const base: Milestone = {
+    id: 'first-signal-round',
+    name: 'First Signal Round',
+    description: 'A round where competitor scores diverged by 5+ points.',
+  achieved: false,
+  };
+
+  const byRound = new Map<string, RoundResult[]>();
+  const orderedIds: string[] = [];
+  for (const r of scored) {
+    if (!byRound.has(r.round_id)) orderedIds.push(r.round_id);
+    const arr = byRound.get(r.round_id) ?? [];
+    arr.push(r);
+    byRound.set(r.round_id, arr);
+  }
+
+  for (const roundId of orderedIds) {
+    const group = byRound.get(roundId)!;
+    if (group.length < 2) continue;
+    const totals = group.map((r) => r.total!);
+    const spread = Math.max(...totals) - Math.min(...totals);
+    if (spread >= 5) {
+      return { ...base, achieved: true, achievedRound: roundId };
+    }
+  }
+
+  return base;
+}
+
+function checkCategoryDomination(scored: RoundResult[]): Milestone {
+  const base: Milestone = {
+    id: 'category-domination',
+    name: 'Category Domination',
+    description: 'One competitor leads every query category by average score.',
+    achieved: false,
+  };
+
+  const withCat = scored.filter((r) => r.query_category != null);
+  if (withCat.length === 0) return base;
+
+  // Compute average total per (competitor, category)
+  const acc = new Map<string, { sum: number; count: number }>();
+  const categories = new Set<string>();
+  const competitors = new Set<string>();
+
+  for (const r of withCat) {
+    const key = `${r.competitor}\0${r.query_category}`;
+    const entry = acc.get(key) ?? { sum: 0, count: 0 };
+    entry.sum += r.total!;
+    entry.count += 1;
+    acc.set(key, entry);
+    categories.add(r.query_category!);
+    competitors.add(r.competitor);
+  }
+
+  // For each category, find the leader
+  const catLeaders = new Map<string, string>();
+  for (const cat of categories) {
+    let bestComp: string | null = null;
+    let bestAvg = -Infinity;
+    let tied = false;
+    for (const comp of competitors) {
+      const entry = acc.get(`${comp}\0${cat}`);
+      if (!entry) continue;
+      const avg = entry.sum / entry.count;
+      if (avg > bestAvg) {
+        bestAvg = avg;
+        bestComp = comp;
+        tied = false;
+      } else if (avg === bestAvg) {
+        tied = true;
+      }
+    }
+    if (tied || !bestComp) return base;
+    catLeaders.set(cat, bestComp);
+  }
+
+  // Check if one competitor leads all categories
+  const leaders = new Set(catLeaders.values());
+  if (leaders.size === 1) {
+    return { ...base, achieved: true };
+  }
+
+  return base;
+}
+
+function checkDepthQueryExplored(scored: RoundResult[]): Milestone {
+  const base: Milestone = {
+    id: 'depth-query-explored',
+    name: 'Depth Query Explored',
+    description: 'A round with a depth-level query was completed.',
+    achieved: false,
+  };
+
+  for (const r of scored) {
+    if (r.query_difficulty === 'depth') {
+      return { ...base, achieved: true, achievedRound: r.round_id };
+    }
+  }
+
+  return base;
+}
+
+function checkComebackConfirmed(scored: RoundResult[]): Milestone {
+  const base: Milestone = {
+    id: 'comeback-confirmed',
+    name: 'Comeback Confirmed',
+    description: 'A trailing competitor won 3 consecutive rounds.',
+    achieved: false,
+  };
+
+  // Group by round, maintaining order
+  const byRound = new Map<string, RoundResult[]>();
+  const orderedIds: string[] = [];
+  for (const r of scored) {
+    if (!byRound.has(r.round_id)) orderedIds.push(r.round_id);
+    const arr = byRound.get(r.round_id) ?? [];
+    arr.push(r);
+    byRound.set(r.round_id, arr);
+  }
+
+  // Track cumulative scores and consecutive wins per competitor
+  const cumScores = new Map<string, number>();
+  const consecutiveWins = new Map<string, number>();
+
+  for (const roundId of orderedIds) {
+    const group = byRound.get(roundId)!;
+    if (group.length < 2) continue;
+
+    // Determine winner of this round
+    const sorted = [...group].sort((a, b) => b.total! - a.total!);
+    const winner = sorted[0].total! > sorted[1].total! ? sorted[0].competitor : null;
+
+    // Check if winner is currently trailing before this round's scores are added
+    if (winner) {
+      const winnerCum = cumScores.get(winner) ?? 0;
+      const isTrailing = [...cumScores.entries()].some(
+        ([comp, score]) => comp !== winner && score > winnerCum,
+      );
+
+      if (isTrailing) {
+        consecutiveWins.set(winner, (consecutiveWins.get(winner) ?? 0) + 1);
+        if ((consecutiveWins.get(winner) ?? 0) >= 3) {
+          return { ...base, achieved: true, achievedRound: roundId };
+        }
+      } else {
+        consecutiveWins.set(winner, 0);
+      }
+
+      // Reset other competitors' consecutive win counts
+      for (const comp of consecutiveWins.keys()) {
+        if (comp !== winner) consecutiveWins.set(comp, 0);
+      }
+    } else {
+      // Tie — reset all
+      for (const comp of consecutiveWins.keys()) {
+        consecutiveWins.set(comp, 0);
+      }
+    }
+
+    // Update cumulative scores
+    for (const r of group) {
+      cumScores.set(r.competitor, (cumScores.get(r.competitor) ?? 0) + r.total!);
+    }
+  }
+
+  return base;
+}
+
+function checkParadigmSignatureFound(scored: RoundResult[]): Milestone {
+  const base: Milestone = {
+    id: 'paradigm-signature-found',
+    name: 'Paradigm Signature Found',
+    description: 'One competitor leads a scoring dimension across 5+ rounds.',
+    achieved: false,
+  };
+
+  // Group by round
+  const byRound = new Map<string, RoundResult[]>();
+  const orderedIds: string[] = [];
+  for (const r of scored) {
+    if (!byRound.has(r.round_id)) orderedIds.push(r.round_id);
+    const arr = byRound.get(r.round_id) ?? [];
+    arr.push(r);
+    byRound.set(r.round_id, arr);
+  }
+
+  const dims = ['precision', 'recall', 'insight'] as const;
+
+  // For each dimension, count per-round wins per competitor
+  for (const dim of dims) {
+    const dimWins = new Map<string, number>();
+
+    for (const roundId of orderedIds) {
+      const group = byRound.get(roundId)!;
+      if (group.length < 2) continue;
+
+      // Find the leader in this dimension for this round
+      let bestComp: string | null = null;
+      let bestVal = -Infinity;
+      let tied = false;
+      for (const r of group) {
+        const val = r[dim] ?? 0;
+        if (val > bestVal) {
+          bestVal = val;
+          bestComp = r.competitor;
+          tied = false;
+        } else if (val === bestVal) {
+          tied = true;
+        }
+      }
+
+      if (!tied && bestComp) {
+        dimWins.set(bestComp, (dimWins.get(bestComp) ?? 0) + 1);
+      }
+    }
+
+    for (const count of dimWins.values()) {
+      if (count >= 5) {
+        return { ...base, achieved: true };
+      }
+    }
+  }
+
+  return base;
+}
