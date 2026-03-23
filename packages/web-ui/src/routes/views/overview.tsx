@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { RoundResult, CompetitorStanding, Season, Chapter } from '@arena/schemas';
 import { computeStreaks } from '@/lib/transforms';
 import { StreakBanner } from '@/components/charts';
@@ -12,16 +12,10 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import seasonsData from '../../../../../specs/seasons.json';
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
-function getLeader(standings: CompetitorStanding[]): {
-  name: string;
-  total: number;
-  margin: number;
-  maxTotal: number;
-} | null {
+function getLeader(standings: CompetitorStanding[]) {
   if (standings.length === 0) return null;
   const sorted = [...standings].sort((a, b) => b.total - a.total);
   const leader = sorted[0];
@@ -29,26 +23,26 @@ function getLeader(standings: CompetitorStanding[]): {
   return {
     name: leader.competitor,
     total: leader.total,
+    wins: leader.wins,
+    rounds: leader.rounds,
+    avg: leader.avg,
     margin: second ? leader.total - second.total : leader.total,
-    maxTotal: leader.total,
+    secondName: second?.competitor ?? null,
+    secondTotal: second?.total ?? 0,
   };
 }
 
-function getLastRound(rounds: RoundResult[]): {
-  roundId: string;
-  winner: string | null;
-  scores: { competitor: string; total: number; precision: number; recall: number; insight: number }[];
-} | null {
+function getLastRound(rounds: RoundResult[]) {
   const scored = rounds.filter((r) => r.source === 'score' && r.total != null);
   if (scored.length === 0) return null;
 
-  // Find the latest round_id
   const roundIds = [...new Set(scored.map((r) => r.round_id))];
   const lastId = roundIds[roundIds.length - 1];
   const group = scored.filter((r) => r.round_id === lastId);
 
   return {
     roundId: lastId,
+    codebase: group[0]?.codebase ?? '',
     winner: group[0]?.round_winner ?? null,
     scores: group
       .map((r) => ({
@@ -62,53 +56,96 @@ function getLastRound(rounds: RoundResult[]): {
   };
 }
 
-function getCurrentSeason(): { season: Season; chapter: Chapter | null } | null {
-  const seasons = seasonsData.seasons as Season[];
-  if (seasons.length === 0) return null;
+// ── Season hook — fetches from /api/seasons ─────────────────────────
 
-  // Find the season with an in_progress chapter, or the last season
-  for (const season of seasons) {
-    const activeChapter = season.chapters.find((ch: Chapter) => ch.status === 'in_progress');
-    if (activeChapter) return { season, chapter: activeChapter };
-  }
+function useSeasons() {
+  const [seasons, setSeasons] = useState<Season[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Fallback: last season, last chapter
-  const last = seasons[seasons.length - 1];
-  const lastChapter = last.chapters[last.chapters.length - 1] ?? null;
-  return { season: last, chapter: lastChapter };
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/seasons')
+      .then((res) => (res.ok ? res.json() : { seasons: [] }))
+      .then((data: { seasons: Season[] }) => {
+        if (!cancelled) {
+          setSeasons(data.seasons ?? []);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  return { seasons, loading };
 }
 
 // ── Components ──────────────────────────────────────────────────────
 
 function LeaderHeroBar({ standings }: { standings: CompetitorStanding[] }) {
   const leader = useMemo(() => getLeader(standings), [standings]);
-  if (!leader) return null;
+  if (!leader) {
+    return (
+      <Card className="md:col-span-2 border-primary/20">
+        <CardContent className="flex items-center justify-center py-12 text-muted-foreground">
+          No standings data yet
+        </CardContent>
+      </Card>
+    );
+  }
 
-  const barWidth = leader.maxTotal > 0
-    ? Math.max(10, (leader.margin / leader.maxTotal) * 100)
+  const gapPct = leader.total > 0
+    ? Math.min(100, Math.max(5, (leader.margin / leader.total) * 100))
     : 0;
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardDescription>Current Leader</CardDescription>
-        <CardTitle className="text-2xl">{leader.name}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-center gap-4">
-          <span className="text-3xl font-bold tabular-nums text-primary">
-            {leader.total}
-          </span>
-          <div className="flex-1">
-            <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-              <span>Margin over 2nd</span>
-              <span className="font-medium tabular-nums">+{leader.margin}</span>
+    <Card className="md:col-span-2 border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
+      <CardContent className="py-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          {/* Leader identity */}
+          <div>
+            <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-1">
+              Current Leader
+            </p>
+            <h3 className="text-3xl font-extrabold tracking-tight text-foreground">
+              {leader.name}
+            </h3>
+            <div className="mt-1 flex gap-4 text-xs text-muted-foreground tabular-nums">
+              <span>{leader.wins}W / {leader.rounds}R</span>
+              <span>Avg {leader.avg.toFixed(1)}</span>
             </div>
-            <div className="h-2 rounded-full bg-muted overflow-hidden">
-              <div
-                className="h-full rounded-full bg-primary transition-all"
-                style={{ width: `${barWidth}%` }}
-              />
+          </div>
+
+          {/* Score + gap bar */}
+          <div className="flex items-center gap-6">
+            <div className="text-right">
+              <span className="text-4xl font-black tabular-nums text-primary">
+                {leader.total}
+              </span>
+              <p className="text-xs text-muted-foreground mt-0.5">total pts</p>
+            </div>
+
+            <div className="w-40">
+              <div className="flex items-baseline justify-between mb-1">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Gap
+                </span>
+                <span className="text-sm font-bold tabular-nums text-primary">
+                  +{leader.margin}
+                </span>
+              </div>
+              <div className="h-2.5 rounded-full bg-muted/60 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-primary transition-all duration-500"
+                  style={{ width: `${gapPct}%` }}
+                />
+              </div>
+              {leader.secondName && (
+                <p className="text-[10px] text-muted-foreground mt-1 text-right tabular-nums">
+                  vs {leader.secondName} ({leader.secondTotal})
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -123,77 +160,132 @@ function RecentRoundCard({ rounds }: { rounds: RoundResult[] }) {
 
   const headline = lastRound.winner
     ? `${lastRound.winner} wins ${lastRound.roundId}`
-    : `${lastRound.roundId} ended in a tie`;
+    : `${lastRound.roundId} — tie`;
 
   return (
     <Card>
-      <CardHeader className="pb-3">
-        <CardDescription>Last Round</CardDescription>
-        <CardTitle className="text-lg">{headline}</CardTitle>
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardDescription className="text-[10px] uppercase tracking-widest">
+            Last Round
+          </CardDescription>
+          <span className="text-[10px] text-muted-foreground">{lastRound.codebase}</span>
+        </div>
+        <CardTitle className="text-base">{headline}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2">
-          {lastRound.scores.map((s) => (
-            <div key={s.competitor} className="flex items-center justify-between text-sm">
-              <span className="font-medium">{s.competitor}</span>
-              <div className="flex gap-3 text-muted-foreground tabular-nums">
-                <span title="Precision">P:{s.precision}</span>
-                <span title="Recall">R:{s.recall}</span>
-                <span title="Insight">I:{s.insight}</span>
-                <span className="font-semibold text-foreground">{s.total}</span>
+        <div className="space-y-1.5">
+          {lastRound.scores.map((s, i) => {
+            const isWinner = i === 0 && lastRound.winner === s.competitor;
+            return (
+              <div
+                key={s.competitor}
+                className={cn(
+                  'flex items-center justify-between rounded px-2 py-1 text-sm',
+                  isWinner && 'bg-primary/5',
+                )}
+              >
+                <span className={cn('font-medium', isWinner && 'text-primary')}>
+                  {s.competitor}
+                </span>
+                <div className="flex gap-2 text-xs text-muted-foreground tabular-nums">
+                  <span>P:{s.precision}</span>
+                  <span>R:{s.recall}</span>
+                  <span>I:{s.insight}</span>
+                  <span className={cn(
+                    'font-bold ml-1',
+                    isWinner ? 'text-primary' : 'text-foreground',
+                  )}>
+                    {s.total}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </CardContent>
     </Card>
   );
 }
 
+function StreakSection({ rounds }: { rounds: RoundResult[] }) {
+  const streaks = useMemo(() => computeStreaks(rounds), [rounds]);
+
+  return <StreakBanner streaks={streaks} />;
+}
+
 const CHAPTER_STATUS_STYLES: Record<string, string> = {
-  closed: 'border-muted bg-muted/50 text-muted-foreground',
-  in_progress: 'border-primary/30 bg-primary/5 text-foreground',
-  planned: 'border-border bg-card text-muted-foreground',
+  closed: 'border-muted bg-muted/30',
+  in_progress: 'border-primary/30 bg-primary/5',
+  planned: 'border-border bg-card',
+};
+
+const CHAPTER_DOT_STYLES: Record<string, string> = {
+  closed: 'bg-muted-foreground/40',
+  in_progress: 'bg-primary',
+  planned: 'bg-border',
 };
 
 function SeasonSection() {
-  const current = useMemo(() => getCurrentSeason(), []);
-  if (!current) return null;
+  const { seasons, loading } = useSeasons();
 
-  const { season, chapter } = current;
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center text-sm text-muted-foreground">
+          Loading season data...
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (seasons.length === 0) return null;
+
+  // Find active season (one with an in_progress chapter) or last one
+  let activeSeason = seasons.find((s) =>
+    s.chapters.some((ch: Chapter) => ch.status === 'in_progress'),
+  );
+  if (!activeSeason) activeSeason = seasons[seasons.length - 1];
 
   return (
     <Card>
-      <CardHeader className="pb-3">
-        <CardDescription>Season</CardDescription>
-        <CardTitle className="text-lg">{season.name}</CardTitle>
+      <CardHeader className="pb-2">
+        <CardDescription className="text-[10px] uppercase tracking-widest">
+          Season
+        </CardDescription>
+        <CardTitle className="text-base">{activeSeason.name}</CardTitle>
+        <p className="text-xs text-muted-foreground">
+          Target: <span className="font-medium text-foreground">{activeSeason.codebase}</span>
+        </p>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-muted-foreground mb-3">
-          Codebase: <span className="font-medium text-foreground">{season.codebase}</span>
-        </p>
-        <ul className="space-y-2">
-          {season.chapters.map((ch: Chapter) => (
-            <li
+        <div className="space-y-1.5">
+          {activeSeason.chapters.map((ch: Chapter) => (
+            <div
               key={ch.id}
               className={cn(
-                'rounded border p-2 text-sm',
+                'rounded border px-3 py-2 text-sm',
                 CHAPTER_STATUS_STYLES[ch.status],
               )}
             >
-              <div className="flex items-center justify-between">
-                <span className="font-medium">{ch.name}</span>
-                <span className="text-xs">
+              <div className="flex items-center gap-2">
+                <span className={cn(
+                  'h-2 w-2 rounded-full shrink-0',
+                  CHAPTER_DOT_STYLES[ch.status],
+                )} />
+                <span className="font-medium flex-1">{ch.name}</span>
+                <span className="text-[10px] text-muted-foreground tabular-nums">
                   {ch.round_range[0]}–{ch.round_range[1]}
                 </span>
               </div>
-              <p className="text-xs mt-1 opacity-80">{ch.theme}</p>
-              {ch.thesis && (
-                <p className="text-xs mt-1 italic opacity-70">{ch.thesis}</p>
+              {ch.status === 'in_progress' && ch.thesis && (
+                <p className="text-xs text-muted-foreground mt-1 ml-4 italic">
+                  {ch.thesis}
+                </p>
               )}
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       </CardContent>
     </Card>
   );
@@ -203,26 +295,32 @@ function SeasonSection() {
 
 export function OverviewView() {
   const { rounds, standings } = useCompetitionData();
-  const streaks = useMemo(() => computeStreaks(rounds), [rounds]);
+  const scoredCount = rounds.filter((r) => r.source === 'score').length;
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-3xl font-bold tracking-tight">Overview</h2>
-
-      {/* Leader + Recent Round — side by side on wider screens */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <LeaderHeroBar standings={standings} />
-        <RecentRoundCard rounds={rounds} />
+    <div className="space-y-4">
+      {/* Page header with live stats bar */}
+      <div className="flex items-baseline justify-between">
+        <h2 className="text-3xl font-bold tracking-tight">Overview</h2>
+        <span className="text-xs text-muted-foreground tabular-nums">
+          {scoredCount} scored rounds
+        </span>
       </div>
 
-      {/* Streak Indicator */}
-      <StreakBanner streaks={streaks} />
+      {/* Hero — full-width leader bar */}
+      <LeaderHeroBar standings={standings} />
 
-      {/* Milestones + Season — side by side on wider screens */}
-      <div className="grid gap-4 md:grid-cols-2">
+      {/* Streak indicator */}
+      <StreakSection rounds={rounds} />
+
+      {/* Intel row: last round + milestones + season */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <RecentRoundCard rounds={rounds} />
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Milestones</CardTitle>
+          <CardHeader className="pb-2">
+            <CardDescription className="text-[10px] uppercase tracking-widest">
+              Milestones
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <MilestonesPanel results={rounds} />
