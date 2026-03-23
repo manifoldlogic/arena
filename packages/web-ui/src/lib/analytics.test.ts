@@ -8,6 +8,7 @@ import {
   computeClosestCalls,
   computeDimensionTotals,
   computeCategoryPerformanceMatrix,
+  computeMilestones,
 } from './analytics';
 
 // ── Test fixtures ───────────────────────────────────────────────────
@@ -513,5 +514,241 @@ describe('edge cases', () => {
     const { rounds } = computeDivergenceMatrix(multi);
     expect(rounds[0].spread).toBe(7); // 10-3
     expect(rounds[0].signal).toBe('signal');
+  });
+});
+
+// ── computeMilestones ─────────────────────────────────────────────
+
+describe('computeMilestones', () => {
+  it('returns 5 milestones', () => {
+    const milestones = computeMilestones([]);
+    expect(milestones).toHaveLength(5);
+    expect(milestones.map((m) => m.id)).toEqual([
+      'first-signal-round',
+      'category-domination',
+      'depth-query-explored',
+      'comeback-confirmed',
+      'paradigm-signature-found',
+    ]);
+  });
+
+  it('all milestones pending with empty input', () => {
+    const milestones = computeMilestones([]);
+    milestones.forEach((m) => {
+      expect(m.achieved).toBe(false);
+      expect(m.achievedRound).toBeUndefined();
+    });
+  });
+
+  describe('First Signal Round', () => {
+    it('achieved when spread >= 5', () => {
+      const milestones = computeMilestones(FOUR_ROUNDS);
+      const m = milestones.find((x) => x.id === 'first-signal-round')!;
+      expect(m.achieved).toBe(true);
+      expect(m.achievedRound).toBe('R4'); // spread=5
+    });
+
+    it('not achieved when all spreads < 5', () => {
+      const narrow = [
+        mkRound({ round_id: 'N1', competitor: 'A', total: 8 }),
+        mkRound({ round_id: 'N1', competitor: 'B', total: 10 }),
+      ];
+      const milestones = computeMilestones(narrow);
+      const m = milestones.find((x) => x.id === 'first-signal-round')!;
+      expect(m.achieved).toBe(false);
+    });
+
+    it('picks the earliest signal round', () => {
+      const data = [
+        mkRound({ round_id: 'S1', competitor: 'A', total: 3 }),
+        mkRound({ round_id: 'S1', competitor: 'B', total: 10 }),
+        mkRound({ round_id: 'S2', competitor: 'A', total: 2 }),
+        mkRound({ round_id: 'S2', competitor: 'B', total: 10 }),
+      ];
+      const milestones = computeMilestones(data);
+      const m = milestones.find((x) => x.id === 'first-signal-round')!;
+      expect(m.achieved).toBe(true);
+      expect(m.achievedRound).toBe('S1'); // first one with spread=7
+    });
+  });
+
+  describe('Category Domination', () => {
+    it('achieved when one competitor leads all categories', () => {
+      const data = [
+        mkRound({ round_id: 'D1', competitor: 'A', total: 10, query_category: 'flow' }),
+        mkRound({ round_id: 'D1', competitor: 'B', total: 5, query_category: 'flow' }),
+        mkRound({ round_id: 'D2', competitor: 'A', total: 9, query_category: 'pattern' }),
+        mkRound({ round_id: 'D2', competitor: 'B', total: 6, query_category: 'pattern' }),
+      ];
+      const milestones = computeMilestones(data);
+      const m = milestones.find((x) => x.id === 'category-domination')!;
+      expect(m.achieved).toBe(true);
+    });
+
+    it('not achieved when categories are split', () => {
+      const data = [
+        mkRound({ round_id: 'D1', competitor: 'A', total: 10, query_category: 'flow' }),
+        mkRound({ round_id: 'D1', competitor: 'B', total: 5, query_category: 'flow' }),
+        mkRound({ round_id: 'D2', competitor: 'A', total: 4, query_category: 'pattern' }),
+        mkRound({ round_id: 'D2', competitor: 'B', total: 8, query_category: 'pattern' }),
+      ];
+      const milestones = computeMilestones(data);
+      const m = milestones.find((x) => x.id === 'category-domination')!;
+      expect(m.achieved).toBe(false);
+    });
+
+    it('not achieved with tied categories', () => {
+      const data = [
+        mkRound({ round_id: 'D1', competitor: 'A', total: 9, query_category: 'flow' }),
+        mkRound({ round_id: 'D1', competitor: 'B', total: 9, query_category: 'flow' }),
+      ];
+      const milestones = computeMilestones(data);
+      const m = milestones.find((x) => x.id === 'category-domination')!;
+      expect(m.achieved).toBe(false);
+    });
+  });
+
+  describe('Depth Query Explored', () => {
+    it('achieved when a round has query_difficulty=depth', () => {
+      const data = [
+        mkRound({ round_id: 'DQ1', competitor: 'A', query_difficulty: 'depth' }),
+      ];
+      const milestones = computeMilestones(data);
+      const m = milestones.find((x) => x.id === 'depth-query-explored')!;
+      expect(m.achieved).toBe(true);
+      expect(m.achievedRound).toBe('DQ1');
+    });
+
+    it('not achieved with only breadth queries', () => {
+      const data = [
+        mkRound({ round_id: 'DQ1', competitor: 'A', query_difficulty: 'breadth' }),
+      ];
+      const milestones = computeMilestones(data);
+      const m = milestones.find((x) => x.id === 'depth-query-explored')!;
+      expect(m.achieved).toBe(false);
+    });
+
+    it('not achieved when query_difficulty is undefined', () => {
+      const milestones = computeMilestones(FOUR_ROUNDS);
+      const m = milestones.find((x) => x.id === 'depth-query-explored')!;
+      expect(m.achieved).toBe(false);
+    });
+  });
+
+  describe('Comeback Confirmed', () => {
+    it('achieved when trailing competitor wins 3 consecutive', () => {
+      const data = [
+        // R1: B wins, B leads
+        mkRound({ round_id: 'CB1', competitor: 'A', total: 5 }),
+        mkRound({ round_id: 'CB1', competitor: 'B', total: 10 }),
+        // R2: A wins (A trails: cumulative A=5, B=10)
+        mkRound({ round_id: 'CB2', competitor: 'A', total: 10 }),
+        mkRound({ round_id: 'CB2', competitor: 'B', total: 5 }),
+        // R3: A wins (A trails: cumulative A=15, B=15... tie means not trailing)
+        // Let's adjust so A is still trailing
+        mkRound({ round_id: 'CB3', competitor: 'A', total: 10 }),
+        mkRound({ round_id: 'CB3', competitor: 'B', total: 6 }),
+        // R4: A wins 3rd consecutive (A cumulative: 25, B: 21 — A now leads, but was trailing before R4)
+        // A cumulative before R4: 5+10+10=25, B: 10+5+6=21 → A leads! Not trailing.
+        // Need to adjust: make B's initial lead bigger
+      ];
+      // Reset with clearer data
+      const comebackData = [
+        // R1: B dominates, B leads
+        mkRound({ round_id: 'CB1', competitor: 'A', total: 3 }),
+        mkRound({ round_id: 'CB1', competitor: 'B', total: 10 }),
+        // R2: A wins (A trails: cumulative A=3, B=10)
+        mkRound({ round_id: 'CB2', competitor: 'A', total: 8 }),
+        mkRound({ round_id: 'CB2', competitor: 'B', total: 5 }),
+        // R3: A wins again (A trails: cumulative A=11, B=15)
+        mkRound({ round_id: 'CB3', competitor: 'A', total: 8 }),
+        mkRound({ round_id: 'CB3', competitor: 'B', total: 5 }),
+        // R4: A wins 3rd consecutive (A trails: cumulative A=19, B=20)
+        mkRound({ round_id: 'CB4', competitor: 'A', total: 8 }),
+        mkRound({ round_id: 'CB4', competitor: 'B', total: 5 }),
+      ];
+      const milestones = computeMilestones(comebackData);
+      const m = milestones.find((x) => x.id === 'comeback-confirmed')!;
+      expect(m.achieved).toBe(true);
+      expect(m.achievedRound).toBe('CB4');
+    });
+
+    it('not achieved with only 2 consecutive wins while trailing', () => {
+      const data = [
+        mkRound({ round_id: 'CB1', competitor: 'A', total: 3 }),
+        mkRound({ round_id: 'CB1', competitor: 'B', total: 10 }),
+        mkRound({ round_id: 'CB2', competitor: 'A', total: 8 }),
+        mkRound({ round_id: 'CB2', competitor: 'B', total: 5 }),
+        mkRound({ round_id: 'CB3', competitor: 'A', total: 8 }),
+        mkRound({ round_id: 'CB3', competitor: 'B', total: 5 }),
+      ];
+      const milestones = computeMilestones(data);
+      const m = milestones.find((x) => x.id === 'comeback-confirmed')!;
+      expect(m.achieved).toBe(false);
+    });
+
+    it('not achieved when leading competitor wins 3 consecutive', () => {
+      const data = [
+        mkRound({ round_id: 'CB1', competitor: 'A', total: 10 }),
+        mkRound({ round_id: 'CB1', competitor: 'B', total: 5 }),
+        mkRound({ round_id: 'CB2', competitor: 'A', total: 10 }),
+        mkRound({ round_id: 'CB2', competitor: 'B', total: 5 }),
+        mkRound({ round_id: 'CB3', competitor: 'A', total: 10 }),
+        mkRound({ round_id: 'CB3', competitor: 'B', total: 5 }),
+      ];
+      const milestones = computeMilestones(data);
+      const m = milestones.find((x) => x.id === 'comeback-confirmed')!;
+      expect(m.achieved).toBe(false);
+    });
+  });
+
+  describe('Paradigm Signature Found', () => {
+    it('achieved when one competitor wins a dimension across 5+ rounds', () => {
+      const data: RoundResult[] = [];
+      for (let i = 1; i <= 5; i++) {
+        data.push(mkRound({ round_id: `P${i}`, competitor: 'A', precision: 5, recall: 3, insight: 3, total: 11 }));
+        data.push(mkRound({ round_id: `P${i}`, competitor: 'B', precision: 3, recall: 3, insight: 3, total: 9 }));
+      }
+      const milestones = computeMilestones(data);
+      const m = milestones.find((x) => x.id === 'paradigm-signature-found')!;
+      expect(m.achieved).toBe(true);
+    });
+
+    it('not achieved with only 4 dimension wins', () => {
+      const data: RoundResult[] = [];
+      for (let i = 1; i <= 4; i++) {
+        data.push(mkRound({ round_id: `P${i}`, competitor: 'A', precision: 5, recall: 3, insight: 3, total: 11 }));
+        data.push(mkRound({ round_id: `P${i}`, competitor: 'B', precision: 3, recall: 3, insight: 3, total: 9 }));
+      }
+      const milestones = computeMilestones(data);
+      const m = milestones.find((x) => x.id === 'paradigm-signature-found')!;
+      expect(m.achieved).toBe(false);
+    });
+
+    it('works across different dimensions', () => {
+      const data: RoundResult[] = [];
+      for (let i = 1; i <= 5; i++) {
+        // B leads insight consistently
+        data.push(mkRound({ round_id: `P${i}`, competitor: 'A', precision: 3, recall: 3, insight: 2, total: 8 }));
+        data.push(mkRound({ round_id: `P${i}`, competitor: 'B', precision: 3, recall: 3, insight: 5, total: 11 }));
+      }
+      const milestones = computeMilestones(data);
+      const m = milestones.find((x) => x.id === 'paradigm-signature-found')!;
+      expect(m.achieved).toBe(true);
+    });
+
+    it('not achieved when dimension leads are split', () => {
+      const data: RoundResult[] = [];
+      for (let i = 1; i <= 5; i++) {
+        // Alternate who leads precision
+        const aPrec = i % 2 === 0 ? 5 : 2;
+        const bPrec = i % 2 === 0 ? 2 : 5;
+        data.push(mkRound({ round_id: `P${i}`, competitor: 'A', precision: aPrec, recall: 3, insight: 3, total: aPrec + 6 }));
+        data.push(mkRound({ round_id: `P${i}`, competitor: 'B', precision: bPrec, recall: 3, insight: 3, total: bPrec + 6 }));
+      }
+      const milestones = computeMilestones(data);
+      const m = milestones.find((x) => x.id === 'paradigm-signature-found')!;
+      expect(m.achieved).toBe(false);
+    });
   });
 });
