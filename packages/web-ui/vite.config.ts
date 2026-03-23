@@ -7,6 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@arena/schemas': path.resolve(__dirname, '../schemas/src'),
     },
   },
   server: {

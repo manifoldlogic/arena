@@ -66,12 +66,12 @@ export interface RoundResult {
 
 export interface CompetitorStanding {
   competitor: string;
-  totalScore: number;
+  total: number;
   wins: number;
   ties: number;
   losses: number;
   rounds: number;
-  avgScore: number;
+  avg: number;
 }
 
 export interface CompetitionStatus {
