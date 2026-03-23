@@ -7,7 +7,7 @@
  * the .tmp source filename during rename, not the target.
  */
 import { watch, statSync, type FSWatcher } from "fs";
-import { dirname, basename } from "path";
+import { dirname } from "path";
 
 export type ChangeCallback = () => void;
 

@@ -2,7 +2,7 @@
  * Analytics module — per-round detail, divergence signals, dimension totals,
  * bridge rounds, calibration, and closest-call analysis.
  */
-import type { RoundResult, BridgeScores } from "@arena/schemas";
+import type { RoundResult } from "@arena/schemas";
 
 /** Round-by-round detail row. */
 export interface RoundDetail {

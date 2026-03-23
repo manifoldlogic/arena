@@ -188,6 +188,12 @@ describe("edge cases", () => {
     const standings = await getJson<unknown[]>("/api/categories/unknown-category");
     expect(standings).toEqual([]);
   });
+
+  test("GET /api/analytics/closest?margin=abc defaults to margin=1", async () => {
+    const calls = await getJson<Array<{ round_id: string }>>("/api/analytics/closest?margin=abc");
+    expect(calls).toHaveLength(1);
+    expect(calls[0].round_id).toBe("R02");
+  });
 });
 
 describe("error handling", () => {

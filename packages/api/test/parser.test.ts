@@ -34,6 +34,18 @@ describe("parseRoundsJsonl", () => {
     expect(result.errors[0].line).toBe(1);
   });
 
+  test("empty string returns no rounds and no errors", () => {
+    const result = parseRoundsJsonl("");
+    expect(result.rounds).toHaveLength(0);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  test("whitespace-only content returns no rounds and no errors", () => {
+    const result = parseRoundsJsonl("  \n  \n  ");
+    expect(result.rounds).toHaveLength(0);
+    expect(result.errors).toHaveLength(0);
+  });
+
   test("collects validation errors for missing fields", () => {
     const content = `{"round_id":"R01"}`;
     const result = parseRoundsJsonl(content);

@@ -215,6 +215,36 @@ describe("computeStandingsByCategory", () => {
   });
 });
 
+describe("computeStandings — edge cases", () => {
+  test("empty input returns empty standings", () => {
+    const standings = computeStandings([]);
+    expect(standings).toEqual([]);
+  });
+
+  test("single competitor in round gets a win", () => {
+    const rounds: RoundResult[] = [
+      {
+        schema_version: 1,
+        round_id: "S01",
+        competitor: "solo",
+        source: "score",
+        is_calibration: false,
+        total: 10,
+        calls: 5,
+        time_s: 20,
+        round_type: "regular",
+        codebase: "django",
+        phase: 1,
+      },
+    ];
+    const standings = computeStandings(rounds);
+    expect(standings).toHaveLength(1);
+    expect(standings[0].wins).toBe(1);
+    expect(standings[0].ties).toBe(0);
+    expect(standings[0].losses).toBe(0);
+  });
+});
+
 describe("getCodebases / getCategories", () => {
   test("returns unique sorted codebases", async () => {
     const scored = await loadScoredRounds();

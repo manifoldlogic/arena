@@ -105,6 +105,15 @@ function cors(response: Response): Response {
 }
 
 async function handleRequest(req: Request): Promise<Response> {
+  try {
+    return await routeRequest(req);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Internal server error";
+    return json({ error: message }, 500);
+  }
+}
+
+async function routeRequest(req: Request): Promise<Response> {
   const url = new URL(req.url);
   const path = url.pathname;
 
@@ -115,15 +124,17 @@ async function handleRequest(req: Request): Promise<Response> {
 
   // SSE endpoint
   if (path === "/events") {
+    let sseController: ReadableStreamDefaultController;
     const stream = new ReadableStream({
       start(controller) {
+        sseController = controller;
         sseClients.add(controller);
         // Send initial connection message
         const msg = `event: connected\ndata: ${JSON.stringify({ status: "ok" })}\n\n`;
         controller.enqueue(new TextEncoder().encode(msg));
       },
-      cancel(controller) {
-        sseClients.delete(controller);
+      cancel() {
+        sseClients.delete(sseController);
       },
     });
 
@@ -193,7 +204,8 @@ async function handleRequest(req: Request): Promise<Response> {
   }
 
   if (path === "/api/analytics/closest") {
-    const margin = parseInt(url.searchParams.get("margin") ?? "1", 10);
+    const parsed = parseInt(url.searchParams.get("margin") ?? "1", 10);
+    const margin = Number.isNaN(parsed) ? 1 : parsed;
     return json(getClosestCalls(scored, margin));
   }
 
