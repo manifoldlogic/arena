@@ -4,6 +4,7 @@ import {
   Trophy,
   ListOrdered,
   BarChart3,
+  FlaskConical,
   Settings,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -13,6 +14,7 @@ const navItems = [
   { to: '/standings', icon: Trophy, label: 'Standings' },
   { to: '/rounds', icon: ListOrdered, label: 'Rounds' },
   { to: '/analytics', icon: BarChart3, label: 'Analytics' },
+  { to: '/hypotheses', icon: FlaskConical, label: 'Hypotheses' },
   { to: '/config', icon: Settings, label: 'Config' },
 ];
 

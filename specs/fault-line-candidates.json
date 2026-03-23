@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0.0",
+  "description": "Fault-line hypotheses: predicted divergence points between competitors across terrain types",
+  "hypotheses": [
+    {
+      "id": "FL-001",
+      "hypothesis": "maproom outperforms on symbol-lookup requiring exact reference chaining",
+      "terrain": "point-lookup",
+      "status": "pending",
+      "candidate_queries": [
+        "Trace the call chain from HTTP handler to database query for user authentication",
+        "Find every callsite of the deprecated `render_to_string` method and its transitive dependents",
+        "Identify which middleware modifies the request context before it reaches the view layer"
+      ],
+      "target_divergence": 0.3,
+      "rationale": "Point-lookup terrain rewards precise symbol resolution and reference-chain traversal — capabilities where indexed navigation should dominate over broad search."
+    },
+    {
+      "id": "FL-002",
+      "hypothesis": "explore outperforms on wide initial sweep when system boundary is unknown",
+      "terrain": "breadth-scan",
+      "status": "pending",
+      "candidate_queries": [
+        "Map all the ways user input reaches the database without parameterization",
+        "Catalog every public API endpoint and its authentication requirements",
+        "Identify all cross-module dependencies that would break if the messaging subsystem were extracted"
+      ],
+      "target_divergence": 0.25,
+      "rationale": "Breadth-scan terrain rewards exploratory strategies that can discover unknown boundaries — favoring agents that cast wide nets before narrowing."
+    },
+    {
+      "id": "FL-003",
+      "hypothesis": "constrained tool budgets favor maproom efficiency",
+      "terrain": "constrained",
+      "status": "pending",
+      "candidate_queries": [
+        "Find the root cause of the N+1 query in the channel list endpoint using at most 10 tool calls",
+        "Determine which configuration flag controls websocket reconnection behavior in under 5 file reads",
+        "Locate the authorization check that prevents guest users from accessing admin routes with minimal exploration"
+      ],
+      "target_divergence": 0.35,
+      "rationale": "Constrained terrain penalizes wasted tool invocations — agents with efficient navigation strategies should show measurable advantage over brute-force searchers."
+    }
+  ]
+}

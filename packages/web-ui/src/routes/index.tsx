@@ -7,6 +7,7 @@ import { RoundsPage } from '@/views/RoundsPage';
 import { RoundDetailPage } from '@/views/RoundDetailPage';
 import { HeadToHeadPage } from '@/views/HeadToHeadPage';
 import { AnalyticsPage } from '@/views/AnalyticsPage';
+import { HypothesesPage } from '@/views/HypothesesPage';
 import { ConfigView } from './views/config';
 import { NotFoundView } from './views/not-found';
 
@@ -22,6 +23,7 @@ export const routes: RouteObject[] = [
       { path: 'rounds/:roundId', element: <RoundDetailPage /> },
       { path: 'rounds/compare', element: <HeadToHeadPage /> },
       { path: 'analytics', element: <AnalyticsPage /> },
+      { path: 'hypotheses', element: <HypothesesPage /> },
       { path: 'config', element: <ConfigView /> },
       { path: '*', element: <NotFoundView /> },
     ],
