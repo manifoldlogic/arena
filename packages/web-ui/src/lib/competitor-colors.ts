@@ -1,6 +1,13 @@
 /**
- * Competitor color palette with deterministic fallback for unknown competitors.
+ * Single authority for all competition color concerns.
+ *
+ * Named competitor palette + theme-aware semantic tokens read from CSS variables.
  */
+import { cssVar } from './cssVar';
+
+// ---------------------------------------------------------------------------
+// Named competitor palette (hardcoded — independent of theme)
+// ---------------------------------------------------------------------------
 
 const PALETTE: Record<string, string> = {
   'claude-code': '#6366f1',    // indigo
@@ -24,6 +31,10 @@ const FALLBACK_COLORS = [
   '#0ea5e9', // sky
 ];
 
+// ---------------------------------------------------------------------------
+// Per-competitor color (stable, hashed fallback)
+// ---------------------------------------------------------------------------
+
 /**
  * Returns a stable color for a competitor.
  * Known competitors get a curated color; unknown ones get a deterministic
@@ -33,7 +44,6 @@ export function getCompetitorColor(competitor: string): string {
   const known = PALETTE[competitor];
   if (known) return known;
 
-  // Deterministic hash → fallback index
   let hash = 0;
   for (let i = 0; i < competitor.length; i++) {
     hash = ((hash << 5) - hash + competitor.charCodeAt(i)) | 0;
@@ -45,3 +55,48 @@ export function getCompetitorColor(competitor: string): string {
 export function getKnownCompetitorColors(): Record<string, string> {
   return { ...PALETTE };
 }
+
+// ---------------------------------------------------------------------------
+// Color maps (used by chart components)
+// ---------------------------------------------------------------------------
+
+/** Build a color map: competitor name → color string using the named palette. */
+export function buildColorMap(competitors: string[]): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const c of competitors) {
+    map[c] = getCompetitorColor(c);
+  }
+  return map;
+}
+
+/** Resolve colorMap prop: use provided map, or build one from the palette. */
+export function resolveColorMap(
+  competitors: string[],
+  colorMap?: Record<string, string>,
+): Record<string, string> {
+  if (colorMap) return colorMap;
+  return buildColorMap(competitors);
+}
+
+// ---------------------------------------------------------------------------
+// Semantic CSS token readers (theme-aware)
+// ---------------------------------------------------------------------------
+
+function hslToken(name: string, fallback: string): string {
+  const v = cssVar(name);
+  return v ? `hsl(${v})` : fallback;
+}
+
+/** Positional competitor colors (A vs B in head-to-head views). */
+export const competitorA = () => hslToken('--competitor-a', 'hsl(217 91% 65%)');
+export const competitorB = () => hslToken('--competitor-b', 'hsl(24 100% 65%)');
+
+/** Dimension colors for radar / breakdown charts. */
+export const dimPrecision = () => hslToken('--dim-precision', 'hsl(217 91% 65%)');
+export const dimRecall    = () => hslToken('--dim-recall',    'hsl(142 76% 50%)');
+export const dimInsight   = () => hslToken('--dim-insight',   'hsl(280 67% 60%)');
+
+/** Signal colors for status indicators. */
+export const signalOk    = () => hslToken('--signal-ok',    'hsl(142 76% 50%)');
+export const signalWarn  = () => hslToken('--signal-warn',  'hsl(45 90% 60%)');
+export const signalAlert = () => hslToken('--signal-alert', 'hsl(0 84% 60%)');

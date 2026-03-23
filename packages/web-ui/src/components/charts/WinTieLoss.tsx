@@ -8,9 +8,9 @@ interface Props {
 }
 
 const WTL_COLORS = {
-  wins: 'hsl(var(--chart-3))',
-  ties: 'hsl(var(--chart-2))',
-  losses: 'hsl(var(--chart-5))',
+  wins: 'hsl(var(--signal-ok))',
+  ties: 'hsl(var(--signal-warn))',
+  losses: 'hsl(var(--signal-alert))',
 };
 
 const WTL_LABELS: Record<string, string> = {
