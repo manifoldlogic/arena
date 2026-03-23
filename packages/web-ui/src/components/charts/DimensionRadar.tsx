@@ -86,38 +86,54 @@ export function DimensionRadar({
         .text(axis.charAt(0).toUpperCase() + axis.slice(1));
     });
 
-    // --- Data polygons ---
+    // --- Data polygons with entry animation ---
     const lineGen = d3
       .lineRadial<{ axis: string; value: number }>()
       .angle((_, i) => angleSlice * i)
       .radius((d) => (d.value / maxValue) * size)
       .curve(d3.curveLinearClosed);
 
+    // Generator for collapsed (center) state
+    const lineGenZero = d3
+      .lineRadial<{ axis: string; value: number }>()
+      .angle((_, i) => angleSlice * i)
+      .radius(0)
+      .curve(d3.curveLinearClosed);
+
     series.forEach((s) => {
       const color = getCompetitorColor(s.competitor);
       const pathData = lineGen(s.dataPoints);
+      const pathDataZero = lineGenZero(s.dataPoints);
 
-      // Polygon fill
+      // Polygon fill — animate from center outward
       g.append('path')
-        .attr('d', pathData)
+        .attr('d', pathDataZero)
         .attr('fill', color)
         .attr('fill-opacity', 0.15)
         .attr('stroke', color)
         .attr('stroke-width', 2)
-        .attr('stroke-opacity', 0.8);
+        .attr('stroke-opacity', 0.8)
+        .transition()
+        .duration(600)
+        .ease(d3.easeCubicOut)
+        .attr('d', pathData);
 
-      // Data points
+      // Data points — fade in after polygon expands
       s.dataPoints.forEach((dp, i) => {
         const angle = angleSlice * i - Math.PI / 2;
         const r = (dp.value / maxValue) * size;
-        g.append('circle')
-          .attr('cx', Math.cos(angle) * r)
-          .attr('cy', Math.sin(angle) * r)
+        const dot = g.append('circle')
+          .attr('cx', 0)
+          .attr('cy', 0)
           .attr('r', 4)
           .attr('fill', color)
           .style('stroke', 'hsl(var(--background))')
           .attr('stroke-width', 1.5)
-          .style('cursor', 'pointer')
+          .attr('opacity', 0)
+          .style('cursor', 'pointer');
+
+        // Attach hover handlers immediately (work after animation completes)
+        dot
           .on('mouseenter', (event: MouseEvent) => {
             const tooltip = tooltipRef.current;
             if (!tooltip) return;
@@ -130,6 +146,14 @@ export function DimensionRadar({
             const tooltip = tooltipRef.current;
             if (tooltip) tooltip.style.display = 'none';
           });
+
+        // Animate from center outward
+        dot.transition()
+          .duration(600)
+          .ease(d3.easeCubicOut)
+          .attr('cx', Math.cos(angle) * r)
+          .attr('cy', Math.sin(angle) * r)
+          .attr('opacity', 1);
       });
     });
   }, [series, size, maxValue, levels, cx, cy, angleSlice]);

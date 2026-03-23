@@ -1,4 +1,3 @@
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import type { WinTieLossEntry } from '@/lib/transforms';
 import { cn } from '@/lib/utils';
 
@@ -13,69 +12,49 @@ const WTL_COLORS = {
   losses: 'hsl(var(--signal-alert))',
 };
 
-const WTL_LABELS: Record<string, string> = {
-  wins: 'Wins',
-  ties: 'Ties',
-  losses: 'Losses',
-};
-
-function DonutForCompetitor({ entry }: { entry: WinTieLossEntry }) {
-  const slices = [
-    { name: 'wins', value: entry.wins },
-    { name: 'ties', value: entry.ties },
-    { name: 'losses', value: entry.losses },
-  ].filter((s) => s.value > 0);
-
-  if (slices.length === 0) {
+function HorizontalBar({ entry }: { entry: WinTieLossEntry }) {
+  const total = entry.wins + entry.ties + entry.losses;
+  if (total === 0) {
     return (
-      <div className="flex flex-col items-center gap-1">
-        <span className="text-sm font-medium">{entry.competitor}</span>
+      <div className="flex items-center gap-3">
+        <span className="text-sm font-medium w-28 shrink-0 text-right">{entry.competitor}</span>
         <span className="text-xs text-muted-foreground">No rounds</span>
       </div>
     );
   }
 
+  const wPct = (entry.wins / total) * 100;
+  const tPct = (entry.ties / total) * 100;
+  const lPct = (entry.losses / total) * 100;
+
   return (
-    <div className="flex flex-col items-center gap-1">
-      <span className="text-sm font-medium">{entry.competitor}</span>
-      <div className="h-36 w-36">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={slices}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              innerRadius={30}
-              outerRadius={55}
-              paddingAngle={2}
-              stroke="none"
-            >
-              {slices.map((s) => (
-                <Cell
-                  key={s.name}
-                  fill={WTL_COLORS[s.name as keyof typeof WTL_COLORS]}
-                />
-              ))}
-            </Pie>
-            <Tooltip
-              formatter={(value: number, name: string) => [value, WTL_LABELS[name] ?? name]}
-              contentStyle={{
-                backgroundColor: 'hsl(var(--card))',
-                borderColor: 'hsl(var(--border))',
-                color: 'hsl(var(--card-foreground))',
-                borderRadius: 'var(--radius)',
-                fontSize: 12,
-              }}
-            />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-      <div className="flex gap-3 text-xs text-muted-foreground">
-        <span>{entry.wins}W</span>
-        <span>{entry.ties}T</span>
-        <span>{entry.losses}L</span>
+    <div className="flex items-center gap-3">
+      <span className="text-sm font-medium w-28 shrink-0 text-right">{entry.competitor}</span>
+      <div className="flex h-7 flex-1 overflow-hidden rounded" title={`${entry.wins}W / ${entry.ties}T / ${entry.losses}L`}>
+        {entry.wins > 0 && (
+          <div
+            className="flex items-center justify-center text-xs font-medium text-white"
+            style={{ width: `${wPct}%`, backgroundColor: WTL_COLORS.wins }}
+          >
+            {entry.wins}W
+          </div>
+        )}
+        {entry.ties > 0 && (
+          <div
+            className="flex items-center justify-center text-xs font-medium text-white"
+            style={{ width: `${tPct}%`, backgroundColor: WTL_COLORS.ties }}
+          >
+            {entry.ties}T
+          </div>
+        )}
+        {entry.losses > 0 && (
+          <div
+            className="flex items-center justify-center text-xs font-medium text-white"
+            style={{ width: `${lPct}%`, backgroundColor: WTL_COLORS.losses }}
+          >
+            {entry.losses}L
+          </div>
+        )}
       </div>
     </div>
   );
@@ -91,9 +70,9 @@ export function WinTieLoss({ data, className }: Props) {
   }
 
   return (
-    <div className={cn('flex flex-wrap justify-center gap-8', className)}>
+    <div className={cn('flex flex-col gap-2', className)}>
       {data.map((entry) => (
-        <DonutForCompetitor key={entry.competitor} entry={entry} />
+        <HorizontalBar key={entry.competitor} entry={entry} />
       ))}
     </div>
   );

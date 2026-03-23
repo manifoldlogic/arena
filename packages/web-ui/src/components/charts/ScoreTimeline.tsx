@@ -8,6 +8,7 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  Area,
 } from 'recharts';
 import type { TimelinePoint } from '@/lib/transforms';
 import { resolveColorMap } from '@/lib/chartColors';
@@ -58,6 +59,18 @@ export function ScoreTimeline({ data, competitors, colorMap, className }: Props)
             }}
           />
           <Legend wrapperStyle={{ fontSize: 12 }} />
+          {competitors.length === 2 && (
+            <Area
+              type="monotone"
+              dataKey={competitors[0]}
+              stroke="none"
+              fill="hsl(var(--primary))"
+              fillOpacity={0.08}
+              isAnimationActive={false}
+              legendType="none"
+              tooltipType="none"
+            />
+          )}
           {competitors.map((c) => (
             <Line
               key={c}
@@ -65,8 +78,8 @@ export function ScoreTimeline({ data, competitors, colorMap, className }: Props)
               dataKey={c}
               stroke={colors[c]}
               strokeWidth={2}
-              dot={{ r: 3, fill: colors[c] }}
-              activeDot={{ r: 5 }}
+              dot={{ r: 5, fill: colors[c] }}
+              activeDot={{ r: 8 }}
             />
           ))}
         </LineChart>
