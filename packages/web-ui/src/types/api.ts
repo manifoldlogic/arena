@@ -8,18 +8,3 @@ export interface CompetitionData {
   error: Error | null;
   refetch: () => void;
 }
-
-export interface SSEEvent {
-  type: 'round-update' | 'standings-update';
-  data: unknown;
-}
-
-export interface RoundUpdateEvent {
-  type: 'round-update';
-  data: RoundResult;
-}
-
-export interface StandingsUpdateEvent {
-  type: 'standings-update';
-  data: CompetitorStanding[];
-}

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, renderHook } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, afterEach } from 'vitest';
 import { DataProvider } from '@/providers/data-provider';
@@ -99,5 +99,11 @@ describe('DataProvider', () => {
     await waitFor(() => {
       expect(screen.getByTestId('rounds-count')).toHaveTextContent('2 rounds');
     });
+  });
+
+  it('throws when useCompetitionData is used outside DataProvider', () => {
+    expect(() => renderHook(() => useCompetitionData())).toThrow(
+      'useCompetitionData must be used within a DataProvider',
+    );
   });
 });

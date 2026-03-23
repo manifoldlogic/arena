@@ -9,7 +9,7 @@ export function RouteError() {
 
   if (isRouteErrorResponse(error)) {
     title = `${error.status} ${error.statusText}`;
-    message = error.data?.toString() ?? message;
+    message = typeof error.data === 'string' ? error.data : message;
   } else if (error instanceof Error) {
     message = error.message;
   }

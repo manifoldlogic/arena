@@ -26,13 +26,15 @@ describe('ContentArea', () => {
   });
 
   it('shows loading skeleton during initial fetch', () => {
-    cleanup = mockFetchSuccess();
-    // Use a delayed fetch to observe loading state
+    // Override fetch with a never-resolving promise to observe loading state
     const original = globalThis.fetch;
-    globalThis.fetch = () => new Promise(() => {});  // Never resolves
-    renderWithRouter(['/']);
-    expect(screen.getByTestId('loading-skeleton')).toBeInTheDocument();
-    globalThis.fetch = original;
+    globalThis.fetch = () => new Promise(() => {});
+    try {
+      renderWithRouter(['/']);
+      expect(screen.getByTestId('loading-skeleton')).toBeInTheDocument();
+    } finally {
+      globalThis.fetch = original;
+    }
   });
 
   it('shows content after successful fetch', async () => {

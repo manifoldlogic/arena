@@ -1,4 +1,4 @@
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, renderHook } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ThemeProvider } from '@/providers/theme-provider';
@@ -66,5 +66,11 @@ describe('ThemeProvider', () => {
 
     await user.click(screen.getByText('Set Dark'));
     expect(document.documentElement.classList.contains('dark')).toBe(true);
+  });
+
+  it('throws when useTheme is used outside ThemeProvider', () => {
+    expect(() => renderHook(() => useTheme())).toThrow(
+      'useTheme must be used within a ThemeProvider',
+    );
   });
 });
