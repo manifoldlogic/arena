@@ -15,7 +15,7 @@ const DIM_LABELS: Record<Dimension, string> = {
 
 const DIM_COLORS: Record<Dimension, string> = {
   precision: 'var(--dim-precision, 217 91% 65%)',
-  recall: 'var(--dim-recall, 142 76% 50%)',
+  recall: 'var(--dim-recall, 164 100% 31%)',
   insight: 'var(--dim-insight, 280 67% 60%)',
 };
 

@@ -12,25 +12,25 @@ import { cssVar } from './cssVar';
 const PALETTE: Record<string, string> = {
   'claude-code': '#6366f1',    // indigo
   'codex-cli': '#f59e0b',      // amber
-  'gemini-cli': '#10b981',     // emerald
-  'aider': '#ef4444',          // red
   'cursor': '#8b5cf6',         // violet
   'copilot': '#3b82f6',        // blue
   'windsurf': '#06b6d4',       // cyan
-  'maproom-skill': '#eab308',  // gold
-  'ast-grep': '#ec4899',       // pink
+  'maproom': '#0072B2',        // Wong blue
+  'explore': '#E69F00',        // Wong orange
+  'maproom-skill': '#CC79A7',  // Wong reddish purple
+  'ast-grep': '#56B4E9',       // Wong sky blue
 };
 
 /** Ordered fallback colors for competitors not in the palette. */
 const FALLBACK_COLORS = [
-  '#ec4899', // pink
-  '#f97316', // orange
-  '#14b8a6', // teal
-  '#a855f7', // purple
-  '#64748b', // slate
-  '#84cc16', // lime
-  '#e11d48', // rose
-  '#0ea5e9', // sky
+  '#D55E00', // Wong vermillion
+  '#009E73', // Wong bluish green
+  '#F0E442', // Wong yellow
+  '#CC79A7', // Wong reddish purple
+  '#56B4E9', // Wong sky blue
+  '#E69F00', // Wong orange
+  '#0072B2', // Wong blue
+  '#64748b', // slate (neutral fallback)
 ];
 
 // ---------------------------------------------------------------------------
@@ -95,10 +95,10 @@ export const competitorB = () => hslToken('--competitor-b', 'hsl(24 100% 65%)');
 
 /** Dimension colors for radar / breakdown charts. */
 export const dimPrecision = () => hslToken('--dim-precision', 'hsl(217 91% 65%)');
-export const dimRecall    = () => hslToken('--dim-recall',    'hsl(142 76% 50%)');
+export const dimRecall    = () => hslToken('--dim-recall',    'hsl(164 100% 31%)');
 export const dimInsight   = () => hslToken('--dim-insight',   'hsl(280 67% 60%)');
 
 /** Signal colors for status indicators. */
-export const signalOk    = () => hslToken('--signal-ok',    'hsl(142 76% 50%)');
-export const signalWarn  = () => hslToken('--signal-warn',  'hsl(45 90% 60%)');
-export const signalAlert = () => hslToken('--signal-alert', 'hsl(0 84% 60%)');
+export const signalOk    = () => hslToken('--signal-ok',    'hsl(202 100% 35%)');
+export const signalWarn  = () => hslToken('--signal-warn',  'hsl(41 100% 45%)');
+export const signalAlert = () => hslToken('--signal-alert', 'hsl(26 100% 42%)');

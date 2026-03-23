@@ -31,13 +31,13 @@
 
     /* Dimension colors (radar / breakdown) */
     --dim-precision: 217 91% 65%;
-    --dim-recall: 142 76% 50%;
+    --dim-recall: 164 100% 31%;
     --dim-insight: 280 67% 60%;
 
-    /* Signal colors (status indicators) */
-    --signal-ok: 142 76% 50%;
-    --signal-warn: 45 90% 60%;
-    --signal-alert: 0 84% 60%;
+    /* Signal colors (status indicators — Wong colorblind-safe palette) */
+    --signal-ok: 202 100% 35%;
+    --signal-warn: 41 100% 45%;
+    --signal-alert: 26 100% 42%;
 
     /* Chart chrome */
     --chart-grid: 220 13% 91%;
@@ -72,13 +72,13 @@
 
     /* Dimension colors (radar / breakdown) */
     --dim-precision: 217 91% 70%;
-    --dim-recall: 142 76% 55%;
+    --dim-recall: 164 100% 36%;
     --dim-insight: 280 67% 65%;
 
-    /* Signal colors (status indicators) */
-    --signal-ok: 142 76% 55%;
-    --signal-warn: 45 90% 65%;
-    --signal-alert: 0 84% 65%;
+    /* Signal colors (status indicators — Wong colorblind-safe palette) */
+    --signal-ok: 202 100% 40%;
+    --signal-warn: 41 100% 50%;
+    --signal-alert: 26 100% 47%;
 
     /* Chart chrome */
     --chart-grid: 220 13% 20%;

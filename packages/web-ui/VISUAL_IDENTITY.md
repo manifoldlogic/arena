@@ -72,7 +72,7 @@ Used in radar charts and dimension breakdowns to distinguish scoring axes.
 | Token | Light | Dark | Dimension |
 |---|---|---|---|
 | `--dim-precision` | `217 91% 65%` | `217 91% 70%` | Precision — blue |
-| `--dim-recall` | `142 76% 50%` | `142 76% 55%` | Recall — green |
+| `--dim-recall` | `164 100% 31%` | `164 100% 36%` | Recall — bluish green (CB-safe) |
 | `--dim-insight` | `280 67% 60%` | `280 67% 65%` | Insight — purple |
 
 TypeScript accessors: `dimPrecision()`, `dimRecall()`, `dimInsight()` from `lib/competitor-colors.ts`.
@@ -83,9 +83,9 @@ Status indicators for operational state. Used in badges, status dots, and condit
 
 | Token | Light | Dark | Meaning |
 |---|---|---|---|
-| `--signal-ok` | `142 76% 50%` | `142 76% 55%` | Success / healthy — green |
-| `--signal-warn` | `45 90% 60%` | `45 90% 65%` | Warning / attention — amber |
-| `--signal-alert` | `0 84% 60%` | `0 84% 65%` | Error / critical — red |
+| `--signal-ok` | `202 100% 35%` | `202 100% 40%` | Success / healthy — blue (CB-safe) |
+| `--signal-warn` | `41 100% 45%` | `41 100% 50%` | Warning / attention — orange (CB-safe) |
+| `--signal-alert` | `26 100% 42%` | `26 100% 47%` | Error / critical — vermillion (CB-safe) |
 
 TypeScript accessors: `signalOk()`, `signalWarn()`, `signalAlert()` from `lib/competitor-colors.ts`.
 
