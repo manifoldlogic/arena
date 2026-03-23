@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { groupRoundsByRoundId } from '@/lib/round-transforms';
 import type { RoundGroup } from '@/lib/round-transforms';
-import { MOCK_ROUNDS } from '@/data/mock-rounds';
+import { useCompetitionData } from '@/hooks/use-competition-data';
 
 export interface UseRoundDetailResult {
   group: RoundGroup | null;
@@ -9,15 +9,15 @@ export interface UseRoundDetailResult {
 }
 
 /**
- * Finds a single round group by round_id from mock data.
- * When a real API exists, this will fetch from /api/rounds/:id.
+ * Finds a single round group by round_id from live competition data.
  */
 export function useRoundDetail(roundId: string | undefined): UseRoundDetailResult {
+  const { rounds, loading } = useCompetitionData();
   const group = useMemo(() => {
-    if (!roundId) return null;
-    const groups = groupRoundsByRoundId(MOCK_ROUNDS);
+    if (!roundId || rounds.length === 0) return null;
+    const groups = groupRoundsByRoundId(rounds);
     return groups.find((g) => g.roundId === roundId) ?? null;
-  }, [roundId]);
+  }, [roundId, rounds]);
 
-  return { group, loading: false };
+  return { group, loading };
 }
