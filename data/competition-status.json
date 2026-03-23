@@ -1,0 +1,22 @@
+{
+  "competition": "Scoreboard Pipeline Live Test",
+  "codebase": "mattermost-webapp",
+  "competitors": ["maproom", "explore"],
+  "phase": 2,
+  "scoring": "precision/recall/insight (1-5 each, max 15)",
+  "status": "in_progress",
+  "rounds_planned": 9,
+  "rounds_completed": 0,
+  "rounds": {
+    "R19": {"query": "How does the notification system work? Trace from WebSocket event to desktop/browser notification.", "category": "flow", "status": "pending"},
+    "R20": {"query": "Find all React context providers and what state they share across the component tree.", "category": "pattern", "status": "pending"},
+    "R21": {"query": "How does channel switching work? What happens when a user clicks a channel in the sidebar?", "category": "flow", "status": "pending"},
+    "R22": {"query": "Find all file upload handling — from drag-and-drop to API submission.", "category": "relationship", "status": "pending"},
+    "R23": {"query": "How is search implemented? Trace from the search input to displaying results.", "category": "flow", "status": "pending"},
+    "R24": {"query": "Find all permission checks in the frontend — how does the app determine what a user can do?", "category": "pattern", "status": "pending"},
+    "R25": {"query": "How does the emoji system work? Custom emoji, picker, reactions — trace the full implementation.", "category": "architecture", "status": "pending"},
+    "R26": {"query": "Find all uses of localStorage and sessionStorage. What data is persisted client-side?", "category": "symbol", "status": "pending"},
+    "R27": {"query": "How does the drafts system work? Auto-saving, restoring when switching channels, draft indicators.", "category": "architecture", "status": "pending"}
+  },
+  "last_updated": "2026-03-21T22:00:00Z"
+}

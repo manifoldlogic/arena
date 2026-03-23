@@ -1,0 +1,7 @@
+{
+  "tool_input": "Find all usages of useSelector in the codebase",
+  "tool_response": {
+    "result": "Found 42 usages..."
+  },
+  "session_id": "sess_other456"
+}
