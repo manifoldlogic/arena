@@ -10,18 +10,19 @@ type SortDir = 'asc' | 'desc';
 interface Props {
   standings: CompetitorStanding[];
   streaks?: StreakInfo[];
+  totalRounds?: number;
   className?: string;
 }
 
-/** Compute rank map (1-indexed) from sorted standings by total desc */
+/** Compute rank map (1-indexed) from sorted standings by avg desc */
 function buildRankMap(standings: CompetitorStanding[]): Map<string, number> {
-  const sorted = [...standings].sort((a, b) => b.total - a.total || b.avg - a.avg);
+  const sorted = [...standings].sort((a, b) => b.avg - a.avg || b.total - a.total);
   const map = new Map<string, number>();
   sorted.forEach((s, i) => map.set(s.competitor, i + 1));
   return map;
 }
 
-export function StandingsTable({ standings, streaks, className }: Props) {
+export function StandingsTable({ standings, streaks, totalRounds, className }: Props) {
   const streakMap = useMemo(() => {
     if (!streaks) return null;
     const map = new Map<string, StreakInfo>();
@@ -29,7 +30,7 @@ export function StandingsTable({ standings, streaks, className }: Props) {
     return map;
   }, [streaks]);
   const hasQAS = standings.some((s) => s.qas != null);
-  const [sortKey, setSortKey] = useState<SortKey>('total');
+  const [sortKey, setSortKey] = useState<SortKey>('avg');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
 
   // Track rank changes across data updates
@@ -59,8 +60,13 @@ export function StandingsTable({ standings, streaks, className }: Props) {
   const sorted = useMemo(() => {
     const copy = [...standings];
     copy.sort((a, b) => {
-      const aVal = a[sortKey] ?? 0;
-      const bVal = b[sortKey] ?? 0;
+      let aVal: string | number = a[sortKey] ?? 0;
+      let bVal: string | number = b[sortKey] ?? 0;
+      // QAS sorts by per-round average, not total
+      if (sortKey === 'qas') {
+        aVal = a.qas != null && a.rounds > 0 ? a.qas / a.rounds : 0;
+        bVal = b.qas != null && b.rounds > 0 ? b.qas / b.rounds : 0;
+      }
       if (typeof aVal === 'string' && typeof bVal === 'string') {
         return sortDir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
       }
@@ -79,11 +85,11 @@ export function StandingsTable({ standings, streaks, className }: Props) {
     }
   }
 
-  const columns: { key: SortKey; label: string; align?: 'left' | 'right' }[] = [
+  const columns: { key: SortKey; label: string; align?: 'left' | 'right'; primary?: boolean; muted?: boolean }[] = [
     { key: 'competitor', label: 'Competitor', align: 'left' },
-    { key: 'total', label: 'Total' },
+    { key: 'avg', label: 'Avg', primary: true },
     ...(hasQAS ? [{ key: 'qas' as SortKey, label: 'QAS' }] : []),
-    { key: 'avg', label: 'Avg' },
+    { key: 'total', label: 'Total', muted: true },
     { key: 'wins', label: 'W' },
     { key: 'ties', label: 'T' },
     { key: 'losses', label: 'L' },
@@ -149,17 +155,19 @@ export function StandingsTable({ standings, streaks, className }: Props) {
                   </span>
                 </td>
                 <td className="px-3 py-2 font-medium">{s.competitor}</td>
-                <td className="px-3 py-2 text-right font-mono font-semibold">{s.total}</td>
+                <td className="px-3 py-2 text-right font-mono text-base font-bold">{s.avg.toFixed(2)}</td>
                 {hasQAS && (
                   <td className="px-3 py-2 text-right font-mono font-semibold text-blue-600 dark:text-blue-400">
-                    {s.qas?.toFixed(2) ?? '—'}
+                    {s.qas != null && s.rounds > 0 ? (s.qas / s.rounds).toFixed(2) : '—'}
                   </td>
                 )}
-                <td className="px-3 py-2 text-right font-mono">{s.avg.toFixed(2)}</td>
+                <td className="px-3 py-2 text-right font-mono text-muted-foreground">{s.total}</td>
                 <td className="px-3 py-2 text-right font-mono">{s.wins}</td>
                 <td className="px-3 py-2 text-right font-mono">{s.ties}</td>
                 <td className="px-3 py-2 text-right font-mono">{s.losses}</td>
-                <td className="px-3 py-2 text-right font-mono">{s.rounds}</td>
+                <td className="px-3 py-2 text-right font-mono">
+                  {totalRounds ? `${s.rounds}/${totalRounds}` : s.rounds}
+                </td>
                 {streakMap && (
                   <td className="px-3 py-2 text-center">
                     <StreakBadge streak={streakMap.get(s.competitor)} />

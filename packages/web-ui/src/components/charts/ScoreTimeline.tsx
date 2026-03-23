@@ -18,10 +18,11 @@ interface Props {
   data: TimelinePoint[];
   competitors: string[];
   colorMap?: Record<string, string>;
+  mode?: 'cumulative' | 'avg';
   className?: string;
 }
 
-export function ScoreTimeline({ data, competitors, colorMap, className }: Props) {
+export function ScoreTimeline({ data, competitors, colorMap, mode = 'avg', className }: Props) {
   const colors = useMemo(
     () => resolveColorMap(competitors, colorMap),
     [competitors, colorMap],
@@ -59,7 +60,7 @@ export function ScoreTimeline({ data, competitors, colorMap, className }: Props)
             }}
           />
           <Legend wrapperStyle={{ fontSize: 12 }} />
-          {competitors.length === 2 && (
+          {mode === 'cumulative' && competitors.length === 2 && (
             <Area
               type="monotone"
               dataKey={competitors[0]}
@@ -80,6 +81,7 @@ export function ScoreTimeline({ data, competitors, colorMap, className }: Props)
               strokeWidth={2}
               dot={{ r: 5, fill: colors[c] }}
               activeDot={{ r: 8 }}
+              connectNulls={mode === 'cumulative'}
             />
           ))}
         </LineChart>

@@ -64,8 +64,8 @@ export function computeStandings(
     });
   }
 
-  // 5. Sort: total desc, then avg desc as tiebreaker
-  standings.sort((a, b) => b.total - a.total || b.avg - a.avg);
+  // 5. Sort: avg desc (fair ranking), then total desc as tiebreaker
+  standings.sort((a, b) => b.avg - a.avg || b.total - a.total);
 
   return standings;
 }
