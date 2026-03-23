@@ -2,7 +2,7 @@ import type { RouteObject } from 'react-router-dom';
 import { AppShell } from '@/components/layout/app-shell';
 import { RouteError } from '@/components/route-error';
 import { OverviewView } from './views/overview';
-import { StandingsView } from './views/standings';
+import { StandingsView } from '@/views/StandingsView';
 import { RoundsView } from './views/rounds';
 import { RoundDetailView } from './views/round-detail';
 import { AnalyticsView } from './views/analytics';

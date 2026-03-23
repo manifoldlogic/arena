@@ -68,18 +68,18 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       const [roundsRes, standingsRes, competitionRes] = await Promise.all([
         fetch('/api/rounds'),
         fetch('/api/standings'),
-        fetch('/api/competition'),
+        fetch('/api/competition').catch(() => null),
       ]);
 
-      if (!roundsRes.ok || !standingsRes.ok || !competitionRes.ok) {
+      if (!roundsRes.ok || !standingsRes.ok) {
         throw new Error('Failed to fetch competition data');
       }
 
-      const [rounds, standings, competition] = await Promise.all([
-        roundsRes.json() as Promise<RoundResult[]>,
-        standingsRes.json() as Promise<CompetitorStanding[]>,
-        competitionRes.json() as Promise<CompetitionStatus>,
-      ]);
+      const rounds = await roundsRes.json() as RoundResult[];
+      const standings = await standingsRes.json() as CompetitorStanding[];
+      const competition = competitionRes?.ok
+        ? await competitionRes.json() as CompetitionStatus
+        : null;
 
       dispatch({ type: 'FETCH_SUCCESS', rounds, standings, competition });
     } catch (err) {

@@ -14,15 +14,15 @@ import {
   EfficiencyScatter,
 } from '@/components/charts';
 import { buildColorMap } from '@/lib/chartColors';
-import { MOCK_ROUNDS } from './mockData';
+import { useCompetitionData } from '@/hooks/use-competition-data';
 
 type BreakdownMode = 'codebase' | 'query_category';
 
 export function StandingsView() {
   const [breakdownMode, setBreakdownMode] = useState<BreakdownMode>('codebase');
 
-  // TODO: Replace with useCompetitionData() from ARENA-03 data hooks
-  const rounds = MOCK_ROUNDS;
+  const { rounds: liveRounds } = useCompetitionData();
+  const rounds = liveRounds;
 
   const standings = useMemo(() => computeStandings(rounds), [rounds]);
   const competitors = useMemo(() => standings.map((s) => s.competitor), [standings]);
