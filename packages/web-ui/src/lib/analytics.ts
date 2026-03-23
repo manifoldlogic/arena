@@ -139,6 +139,14 @@ function stdDev(values: number[]): number {
   return Math.sqrt(variance);
 }
 
+export type DiscriminationStatus = 'drought' | 'emerging' | 'signal_found';
+
+export interface DiscriminationResult {
+  status: DiscriminationStatus;
+  streak: number;
+  lastSignalRound: string | null;
+}
+
 // ── Public API ──────────────────────────────────────────────────────
 
 /**
@@ -391,4 +399,61 @@ export function computeCategoryPerformanceMatrix(
   }
 
   return { cells, competitors, categories, competitorAverages, categoryAverages };
+}
+
+/**
+ * Divergence drought indicator.
+ *
+ * Examines the most recent `windowSize` rounds from the divergence matrix and
+ * classifies the current discrimination state:
+ * - **drought**: all rounds in the window are gray (no separation)
+ * - **emerging**: 2+ yellow rounds in the window (discrimination improving)
+ * - **signal_found**: any signal-level round in the window
+ *
+ * `streak` counts consecutive gray rounds from the most recent round backwards.
+ * `lastSignalRound` is the round_id of the most recent signal-level round overall.
+ */
+export function computeDiscriminationStatus(
+  rounds: RoundResult[],
+  windowSize: number = 5,
+): DiscriminationResult {
+  const { rounds: cells } = computeDivergenceMatrix(rounds);
+
+  if (cells.length === 0) {
+    return { status: 'drought', streak: 0, lastSignalRound: null };
+  }
+
+  // Find last signal round across all cells
+  let lastSignalRound: string | null = null;
+  for (let i = cells.length - 1; i >= 0; i--) {
+    if (cells[i].signal === 'signal') {
+      lastSignalRound = cells[i].roundId;
+      break;
+    }
+  }
+
+  // Count consecutive gray streak from end
+  let streak = 0;
+  for (let i = cells.length - 1; i >= 0; i--) {
+    if (cells[i].signal === 'gray') {
+      streak++;
+    } else {
+      break;
+    }
+  }
+
+  // Examine the window (last windowSize rounds)
+  const window = cells.slice(-windowSize);
+
+  const hasSignal = window.some((c) => c.signal === 'signal');
+  if (hasSignal) {
+    return { status: 'signal_found', streak, lastSignalRound };
+  }
+
+  const yellowCount = window.filter((c) => c.signal === 'yellow').length;
+  if (yellowCount >= 2) {
+    return { status: 'emerging', streak, lastSignalRound };
+  }
+
+  return { status: 'drought', streak, lastSignalRound };
 }

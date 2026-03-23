@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import type { RoundResult } from '@arena/schemas';
 import {
   classifyDivergence,
+  computeDiscriminationStatus,
   computeDivergenceMatrix,
   computeDriftTimeline,
   computeClosestCalls,
@@ -312,6 +313,136 @@ describe('computeCategoryPerformanceMatrix', () => {
     expect(result.cells).toHaveLength(0);
     expect(result.competitors).toHaveLength(0);
     expect(result.categories).toHaveLength(0);
+  });
+});
+
+// ── computeDiscriminationStatus ─────────────────────────────────────
+
+describe('computeDiscriminationStatus', () => {
+  it('returns drought with streak=0 for empty input', () => {
+    const result = computeDiscriminationStatus([], 5);
+    expect(result).toEqual({ status: 'drought', streak: 0, lastSignalRound: null });
+  });
+
+  it('returns drought when all rounds in window are gray', () => {
+    // R1 spread=2 → gray, R2 spread=1 → gray
+    const allGray: RoundResult[] = [
+      mkRound({ round_id: 'G1', competitor: 'Alpha', total: 8 }),
+      mkRound({ round_id: 'G1', competitor: 'Beta', total: 10 }), // spread=2 → gray
+      mkRound({ round_id: 'G2', competitor: 'Alpha', total: 9 }),
+      mkRound({ round_id: 'G2', competitor: 'Beta', total: 10 }), // spread=1 → gray
+    ];
+    const result = computeDiscriminationStatus(allGray, 5);
+    expect(result.status).toBe('drought');
+    expect(result.streak).toBe(2);
+    expect(result.lastSignalRound).toBeNull();
+  });
+
+  it('returns emerging when 2+ yellow rounds in window', () => {
+    // Need 2+ rounds with spread 3-4 (yellow) and no signal
+    const emerging: RoundResult[] = [
+      mkRound({ round_id: 'E1', competitor: 'Alpha', total: 7 }),
+      mkRound({ round_id: 'E1', competitor: 'Beta', total: 10 }), // spread=3 → yellow
+      mkRound({ round_id: 'E2', competitor: 'Alpha', total: 6 }),
+      mkRound({ round_id: 'E2', competitor: 'Beta', total: 10 }), // spread=4 → yellow
+      mkRound({ round_id: 'E3', competitor: 'Alpha', total: 9 }),
+      mkRound({ round_id: 'E3', competitor: 'Beta', total: 10 }), // spread=1 → gray
+    ];
+    const result = computeDiscriminationStatus(emerging, 5);
+    expect(result.status).toBe('emerging');
+    expect(result.streak).toBe(1); // last round is gray
+    expect(result.lastSignalRound).toBeNull();
+  });
+
+  it('returns signal_found when any signal in window', () => {
+    // FOUR_ROUNDS has R4 with spread=5 → signal
+    const result = computeDiscriminationStatus(FOUR_ROUNDS, 5);
+    expect(result.status).toBe('signal_found');
+    expect(result.streak).toBe(0); // R4 (last) is signal, not gray
+    expect(result.lastSignalRound).toBe('R4');
+  });
+
+  it('signal_found takes priority over emerging', () => {
+    // Mix of yellow and signal
+    const mixed: RoundResult[] = [
+      mkRound({ round_id: 'M1', competitor: 'Alpha', total: 7 }),
+      mkRound({ round_id: 'M1', competitor: 'Beta', total: 10 }), // spread=3 → yellow
+      mkRound({ round_id: 'M2', competitor: 'Alpha', total: 6 }),
+      mkRound({ round_id: 'M2', competitor: 'Beta', total: 10 }), // spread=4 → yellow
+      mkRound({ round_id: 'M3', competitor: 'Alpha', total: 5 }),
+      mkRound({ round_id: 'M3', competitor: 'Beta', total: 10 }), // spread=5 → signal
+    ];
+    const result = computeDiscriminationStatus(mixed, 5);
+    expect(result.status).toBe('signal_found');
+    expect(result.lastSignalRound).toBe('M3');
+  });
+
+  it('respects window size — old signal outside window gives drought', () => {
+    // Signal in round 1, then 3 gray rounds. Window=3 should miss the signal.
+    const oldSignal: RoundResult[] = [
+      mkRound({ round_id: 'O1', competitor: 'Alpha', total: 5 }),
+      mkRound({ round_id: 'O1', competitor: 'Beta', total: 10 }), // spread=5 → signal
+      mkRound({ round_id: 'O2', competitor: 'Alpha', total: 9 }),
+      mkRound({ round_id: 'O2', competitor: 'Beta', total: 10 }), // spread=1 → gray
+      mkRound({ round_id: 'O3', competitor: 'Alpha', total: 9 }),
+      mkRound({ round_id: 'O3', competitor: 'Beta', total: 10 }), // spread=1 → gray
+      mkRound({ round_id: 'O4', competitor: 'Alpha', total: 8 }),
+      mkRound({ round_id: 'O4', competitor: 'Beta', total: 10 }), // spread=2 → gray
+    ];
+    const result = computeDiscriminationStatus(oldSignal, 3);
+    expect(result.status).toBe('drought');
+    expect(result.streak).toBe(3); // O2, O3, O4 all gray
+    expect(result.lastSignalRound).toBe('O1'); // still remembers last signal
+  });
+
+  it('1 yellow in window is not enough for emerging — returns drought', () => {
+    const oneYellow: RoundResult[] = [
+      mkRound({ round_id: 'Y1', competitor: 'Alpha', total: 7 }),
+      mkRound({ round_id: 'Y1', competitor: 'Beta', total: 10 }), // spread=3 → yellow
+      mkRound({ round_id: 'Y2', competitor: 'Alpha', total: 9 }),
+      mkRound({ round_id: 'Y2', competitor: 'Beta', total: 10 }), // spread=1 → gray
+    ];
+    const result = computeDiscriminationStatus(oneYellow, 5);
+    expect(result.status).toBe('drought');
+    expect(result.streak).toBe(1);
+  });
+
+  it('streak counts consecutive gray from most recent round', () => {
+    const trailingGray: RoundResult[] = [
+      mkRound({ round_id: 'T1', competitor: 'Alpha', total: 5 }),
+      mkRound({ round_id: 'T1', competitor: 'Beta', total: 10 }), // signal
+      mkRound({ round_id: 'T2', competitor: 'Alpha', total: 9 }),
+      mkRound({ round_id: 'T2', competitor: 'Beta', total: 10 }), // gray
+      mkRound({ round_id: 'T3', competitor: 'Alpha', total: 8 }),
+      mkRound({ round_id: 'T3', competitor: 'Beta', total: 10 }), // gray
+    ];
+    const result = computeDiscriminationStatus(trailingGray, 5);
+    expect(result.streak).toBe(2);
+  });
+
+  it('streak is 0 when most recent round is not gray', () => {
+    const endsWithSignal: RoundResult[] = [
+      mkRound({ round_id: 'S1', competitor: 'Alpha', total: 9 }),
+      mkRound({ round_id: 'S1', competitor: 'Beta', total: 10 }), // gray
+      mkRound({ round_id: 'S2', competitor: 'Alpha', total: 5 }),
+      mkRound({ round_id: 'S2', competitor: 'Beta', total: 10 }), // signal
+    ];
+    const result = computeDiscriminationStatus(endsWithSignal, 5);
+    expect(result.streak).toBe(0);
+  });
+
+  it('uses default windowSize of 5', () => {
+    // 6 rounds: first is signal, last 5 are gray → drought
+    const rounds: RoundResult[] = [];
+    rounds.push(mkRound({ round_id: 'D1', competitor: 'Alpha', total: 5 }));
+    rounds.push(mkRound({ round_id: 'D1', competitor: 'Beta', total: 10 })); // signal
+    for (let i = 2; i <= 6; i++) {
+      rounds.push(mkRound({ round_id: `D${i}`, competitor: 'Alpha', total: 9 }));
+      rounds.push(mkRound({ round_id: `D${i}`, competitor: 'Beta', total: 10 })); // gray
+    }
+    const result = computeDiscriminationStatus(rounds); // default window=5
+    expect(result.status).toBe('drought');
+    expect(result.lastSignalRound).toBe('D1');
   });
 });
 
