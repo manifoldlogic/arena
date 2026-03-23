@@ -3,15 +3,12 @@
  *
  * Used by computeQAS to calculate efficiency bonuses.
  */
-import competitorsData from '../../../specs/competitors.json';
-
-interface Competitor {
-  name: string;
-  performance_budget: { max_calls: number };
-}
-
-const competitors = competitorsData as { competitors: Competitor[] };
-
-export const maxCallsMap: Record<string, number> = Object.fromEntries(
-  competitors.competitors.map((c) => [c.name, c.performance_budget.max_calls]),
-);
+/**
+ * Default max-calls budgets per competitor.
+ * In production these would be fetched from the API or specs/competitors.json.
+ * Hardcoded here to avoid Vite JSON import path issues.
+ */
+export const maxCallsMap: Record<string, number> = {
+  maproom: 100,
+  explore: 150,
+};
