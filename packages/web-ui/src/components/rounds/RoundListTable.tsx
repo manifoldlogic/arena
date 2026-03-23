@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { RoundGroup } from '@/lib/round-transforms';
 import type { SortField, SortDir } from '@/hooks/useRoundFilters';
-import { DivergenceBadge } from './DivergenceBadge';
+import { DivergenceBadge, DifficultyBadge } from './DivergenceBadge';
 import { getCompetitorColor } from '@/lib/competitor-colors';
 
 interface RoundListTableProps {
@@ -64,6 +64,7 @@ export function RoundListTable({ groups, sortField, sortDir, onSort }: RoundList
               Winner
               <SortIndicator field="winner" activeField={sortField} dir={sortDir} />
             </th>
+            <th className="px-3 py-2 font-medium text-slate-600">Difficulty</th>
             <th className="px-3 py-2 font-medium text-slate-600">Divergence</th>
           </tr>
         </thead>
@@ -73,6 +74,7 @@ export function RoundListTable({ groups, sortField, sortDir, onSort }: RoundList
             const scores = group.results.map((r) => r.total ?? 0);
             const bestScore = scores.length > 0 ? Math.max(...scores) : 0;
             const divergence = group.results.find((r) => r.divergence_signal)?.divergence_signal;
+            const difficulty = group.results.find((r) => r.query_difficulty)?.query_difficulty;
 
             return (
               <tr
@@ -122,7 +124,10 @@ export function RoundListTable({ groups, sortField, sortDir, onSort }: RoundList
                   )}
                 </td>
                 <td className="px-3 py-2">
-                  <DivergenceBadge signal={divergence} />
+                  {difficulty ? <DifficultyBadge difficulty={difficulty} /> : <span className="text-slate-400">—</span>}
+                </td>
+                <td className="px-3 py-2">
+                  <DivergenceBadge signal={divergence} difficulty={difficulty} />
                 </td>
               </tr>
             );
