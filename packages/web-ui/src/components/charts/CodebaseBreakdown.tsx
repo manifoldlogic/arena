@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import type { BreakdownEntry } from '@/lib/transforms';
-import { FALLBACK_COLORS } from '@/lib/chartColors';
+import { resolveColorMap } from '@/lib/chartColors';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -36,14 +36,10 @@ function reshapeForChart(data: BreakdownEntry[]): Record<string, string | number
 }
 
 export function CodebaseBreakdown({ data, competitors, colorMap, stacked = false, className }: Props) {
-  const colors = useMemo(() => {
-    if (colorMap) return colorMap;
-    const map: Record<string, string> = {};
-    competitors.forEach((c, i) => {
-      map[c] = FALLBACK_COLORS[i % FALLBACK_COLORS.length];
-    });
-    return map;
-  }, [competitors, colorMap]);
+  const colors = useMemo(
+    () => resolveColorMap(competitors, colorMap),
+    [competitors, colorMap],
+  );
 
   const chartData = useMemo(() => reshapeForChart(data), [data]);
 

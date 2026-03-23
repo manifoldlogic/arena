@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { computeScoreTimeline } from '../computeScoreTimeline';
-import { mockRounds, agentOnlyRound, calibrationRound } from './fixtures';
+import { mockRounds, agentOnlyRound, calibrationRound, duplicateRound } from './fixtures';
 
 describe('computeScoreTimeline', () => {
   it('computes cumulative scores over rounds', () => {
@@ -63,5 +63,15 @@ describe('computeScoreTimeline', () => {
 
   it('returns empty array for empty input', () => {
     expect(computeScoreTimeline([])).toEqual([]);
+  });
+
+  it('deduplicates by (round_id, competitor) keeping last entry', () => {
+    // duplicateRound replaces R01 maproom (total 9 -> 12)
+    const timeline = computeScoreTimeline([...mockRounds, duplicateRound]);
+    expect(timeline).toHaveLength(4);
+    // R01 maproom should use 12 (duplicate), not 9 (original)
+    expect(timeline[0]['maproom']).toBe(12);
+    // R04 final cumulative: 12 + 7 + 10 + 5 = 34
+    expect(timeline[3]['maproom']).toBe(34);
   });
 });

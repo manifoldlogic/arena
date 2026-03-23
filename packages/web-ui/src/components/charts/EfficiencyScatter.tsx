@@ -1,7 +1,7 @@
 import { useRef, useEffect, useMemo } from 'react';
 import * as Plot from '@observablehq/plot';
 import type { ScatterPoint } from '@/lib/transforms';
-import { FALLBACK_COLORS } from '@/lib/chartColors';
+import { resolveColorMap } from '@/lib/chartColors';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -14,14 +14,10 @@ interface Props {
 export function EfficiencyScatter({ data, competitors, colorMap, className }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const colors = useMemo(() => {
-    if (colorMap) return colorMap;
-    const map: Record<string, string> = {};
-    competitors.forEach((c, i) => {
-      map[c] = FALLBACK_COLORS[i % FALLBACK_COLORS.length];
-    });
-    return map;
-  }, [competitors, colorMap]);
+  const colors = useMemo(
+    () => resolveColorMap(competitors, colorMap),
+    [competitors, colorMap],
+  );
 
   const domain = useMemo(() => [...competitors], [competitors]);
   const range = useMemo(() => domain.map((c) => colors[c]), [domain, colors]);

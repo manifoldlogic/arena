@@ -33,7 +33,7 @@ export function computeStandings(rounds: RoundResult[]): CompetitorStanding[] {
     const totalScore = results.reduce((sum, r) => sum + (r.total ?? 0), 0);
     const wins = results.filter((r) => r.round_winner === competitor).length;
     const ties = results.filter(
-      (r) => r.round_winner === null || r.round_winner === 'tie',
+      (r) => r.round_winner == null || r.round_winner === 'tie',
     ).length;
     const losses = results.length - wins - ties;
 

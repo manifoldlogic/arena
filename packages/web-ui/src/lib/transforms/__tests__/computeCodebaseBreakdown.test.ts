@@ -65,4 +65,15 @@ describe('computeCodebaseBreakdown', () => {
   it('returns empty array for empty input', () => {
     expect(computeCodebaseBreakdown([], 'codebase')).toEqual([]);
   });
+
+  it('falls back to "unknown" when query_category is missing', () => {
+    const noCategoryRound = {
+      ...mockRounds[0],
+      round_id: 'R99',
+      query_category: undefined,
+    };
+    const breakdown = computeCodebaseBreakdown([noCategoryRound], 'query_category');
+    expect(breakdown).toHaveLength(1);
+    expect(breakdown[0].group).toBe('unknown');
+  });
 });

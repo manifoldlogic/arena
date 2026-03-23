@@ -61,4 +61,26 @@ describe('computeStandings', () => {
   it('returns empty array when no scored rounds exist', () => {
     expect(computeStandings([agentOnlyRound, calibrationRound])).toEqual([]);
   });
+
+  it('treats round_winner "tie" string as a tie', () => {
+    const tieRound = {
+      ...mockRounds[0],
+      round_id: 'R99',
+      round_winner: 'tie' as const,
+    };
+    const standings = computeStandings([tieRound]);
+    expect(standings[0].ties).toBe(1);
+    expect(standings[0].losses).toBe(0);
+  });
+
+  it('treats undefined round_winner as a tie', () => {
+    const noWinnerRound = {
+      ...mockRounds[0],
+      round_id: 'R99',
+      round_winner: undefined,
+    };
+    const standings = computeStandings([noWinnerRound]);
+    expect(standings[0].ties).toBe(1);
+    expect(standings[0].losses).toBe(0);
+  });
 });

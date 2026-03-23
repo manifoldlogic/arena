@@ -40,3 +40,21 @@ export const FALLBACK_COLORS = [
   'hsl(271 76% 53%)',
   'hsl(349 89% 60%)',
 ];
+
+/** Build a fallback color map from FALLBACK_COLORS when CSS vars unavailable. */
+export function fallbackColorMap(competitors: string[]): Record<string, string> {
+  const map: Record<string, string> = {};
+  competitors.forEach((c, i) => {
+    map[c] = FALLBACK_COLORS[i % FALLBACK_COLORS.length];
+  });
+  return map;
+}
+
+/** Resolve colorMap prop: use provided map, or build fallback. */
+export function resolveColorMap(
+  competitors: string[],
+  colorMap?: Record<string, string>,
+): Record<string, string> {
+  if (colorMap) return colorMap;
+  return fallbackColorMap(competitors);
+}

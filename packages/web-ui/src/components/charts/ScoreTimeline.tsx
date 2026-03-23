@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import type { TimelinePoint } from '@/lib/transforms';
-import { FALLBACK_COLORS } from '@/lib/chartColors';
+import { resolveColorMap } from '@/lib/chartColors';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -21,14 +21,10 @@ interface Props {
 }
 
 export function ScoreTimeline({ data, competitors, colorMap, className }: Props) {
-  const colors = useMemo(() => {
-    if (colorMap) return colorMap;
-    const map: Record<string, string> = {};
-    competitors.forEach((c, i) => {
-      map[c] = FALLBACK_COLORS[i % FALLBACK_COLORS.length];
-    });
-    return map;
-  }, [competitors, colorMap]);
+  const colors = useMemo(
+    () => resolveColorMap(competitors, colorMap),
+    [competitors, colorMap],
+  );
 
   if (data.length === 0) {
     return (
