@@ -118,7 +118,7 @@
       "difficulty": "constrained",
       "terrain": "point-lookup",
       "constraint": "max 25 tool calls",
-      "query": "Using at most 25 tool calls, find the most important security vulnerability in Django's CSRF protection implementation.",
+      "query": "Using at most 25 tool calls, assess Django's CSRF protection implementation for high-impact vulnerabilities; if none are found, state that explicitly with evidence.",
       "hypothesis": "FL-003",
       "target_divergence": "yellow"
     },
@@ -138,7 +138,7 @@
       "difficulty": "constrained",
       "terrain": "breadth-scan",
       "constraint": "max 15 tool calls",
-      "query": "Using at most 15 tool calls, find the most critical accessibility (a11y) violation in the main navigation components.",
+      "query": "Using at most 15 tool calls, assess main navigation components for critical accessibility (a11y) violations; if none are found, state that explicitly with evidence.",
       "hypothesis": "FL-003",
       "target_divergence": "signal"
     }

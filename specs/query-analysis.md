@@ -11,25 +11,25 @@
 - **recall**: avg=4.54, range=4-5, spread=1
 - **insight**: avg=4.21, range=3-5, spread=2
 
-**Finding:** Precision is uniformly 4-5 across all rounds. Recall shows the most variation
-(4-5, with explore sometimes scoring 5 when maproom scores 4 and vice versa). Insight is
-the dimension with the most meaningful differentiation — R28 (depth query) produced
-explore=3, maproom=5 on insight, the largest single-dimension gap.
+**Finding:** Precision is uniformly 4-5 across all rounds. Recall shows minor variation
+(4-5, with explore and maproom trading single-point leads). Insight exhibits the most
+meaningful variation with a spread of 2 — R28 (depth query) produced explore=3, maproom=5
+on insight, the largest single-dimension gap in the competition.
 
 ## Per-Category Performance
 
 - **architecture**: 2 rounds, explore avg=14.0, maproom avg=14.0
 - **flow**: 6 rounds, explore avg=12.7, maproom avg=14.0
 - **pattern**: 2 rounds, explore avg=14.0, maproom avg=13.5
-- **relationship**: 1 rounds, explore avg=13.0, maproom avg=14.0
-- **symbol**: 1 rounds, explore avg=14.0, maproom avg=14.0
+- **relationship**: 1 round, explore avg=13.0, maproom avg=14.0
+- **symbol**: 1 round, explore avg=14.0, maproom avg=14.0
 
 ## Efficiency Analysis
 
 - **explore**: avg 55 calls (35-68), avg 162s
 - **maproom**: avg 46 calls (28-76), avg 147s
 
-Maproom is consistently more efficient: ~30% fewer tool calls and ~20% faster wall time.
+Maproom is consistently more efficient: ~16% fewer tool calls and ~9% faster wall time.
 This efficiency advantage is invisible in current scoring because quality scores converge.
 
 ## Why Gray Divergence Persists
