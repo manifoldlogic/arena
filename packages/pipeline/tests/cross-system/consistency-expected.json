@@ -1,0 +1,409 @@
+{
+  "metadata": {
+    "fixture": "consistency-test-rounds.jsonl",
+    "total_raw_entries": 33,
+    "total_after_dedup": 32,
+    "total_scorable": 29,
+    "generator": "generate_golden.py"
+  },
+  "overall": [
+    {
+      "competitor": "alpha",
+      "total": 173,
+      "wins": 10,
+      "ties": 3,
+      "losses": 1,
+      "rounds": 14,
+      "avg": 12.36
+    },
+    {
+      "competitor": "beta",
+      "total": 132,
+      "wins": 1,
+      "ties": 3,
+      "losses": 9,
+      "rounds": 13,
+      "avg": 10.15
+    },
+    {
+      "competitor": "gamma",
+      "total": 24,
+      "wins": 0,
+      "ties": 1,
+      "losses": 1,
+      "rounds": 2,
+      "avg": 12.0
+    }
+  ],
+  "by_codebase": {
+    "django": [
+      {
+        "competitor": "alpha",
+        "total": 47,
+        "wins": 2,
+        "ties": 1,
+        "losses": 1,
+        "rounds": 4,
+        "avg": 11.75
+      },
+      {
+        "competitor": "beta",
+        "total": 43,
+        "wins": 1,
+        "ties": 1,
+        "losses": 2,
+        "rounds": 4,
+        "avg": 10.75
+      },
+      {
+        "competitor": "gamma",
+        "total": 9,
+        "wins": 0,
+        "ties": 0,
+        "losses": 1,
+        "rounds": 1,
+        "avg": 9.0
+      }
+    ],
+    "fastapi": [
+      {
+        "competitor": "alpha",
+        "total": 59,
+        "wins": 4,
+        "ties": 1,
+        "losses": 0,
+        "rounds": 5,
+        "avg": 11.8
+      },
+      {
+        "competitor": "beta",
+        "total": 39,
+        "wins": 0,
+        "ties": 1,
+        "losses": 3,
+        "rounds": 4,
+        "avg": 9.75
+      }
+    ],
+    "mattermost-webapp": [
+      {
+        "competitor": "alpha",
+        "total": 67,
+        "wins": 4,
+        "ties": 1,
+        "losses": 0,
+        "rounds": 5,
+        "avg": 13.4
+      },
+      {
+        "competitor": "beta",
+        "total": 50,
+        "wins": 0,
+        "ties": 1,
+        "losses": 4,
+        "rounds": 5,
+        "avg": 10.0
+      },
+      {
+        "competitor": "gamma",
+        "total": 15,
+        "wins": 0,
+        "ties": 1,
+        "losses": 0,
+        "rounds": 1,
+        "avg": 15.0
+      }
+    ]
+  },
+  "by_category": {
+    "boundary": [
+      {
+        "competitor": "alpha",
+        "total": 23,
+        "wins": 1,
+        "ties": 1,
+        "losses": 0,
+        "rounds": 2,
+        "avg": 11.5
+      },
+      {
+        "competitor": "beta",
+        "total": 22,
+        "wins": 0,
+        "ties": 1,
+        "losses": 1,
+        "rounds": 2,
+        "avg": 11.0
+      }
+    ],
+    "config": [
+      {
+        "competitor": "alpha",
+        "total": 14,
+        "wins": 1,
+        "ties": 0,
+        "losses": 0,
+        "rounds": 1,
+        "avg": 14.0
+      },
+      {
+        "competitor": "beta",
+        "total": 7,
+        "wins": 0,
+        "ties": 0,
+        "losses": 1,
+        "rounds": 1,
+        "avg": 7.0
+      }
+    ],
+    "error-handling": [
+      {
+        "competitor": "alpha",
+        "total": 12,
+        "wins": 1,
+        "ties": 0,
+        "losses": 0,
+        "rounds": 1,
+        "avg": 12.0
+      }
+    ],
+    "flow": [
+      {
+        "competitor": "alpha",
+        "total": 38,
+        "wins": 3,
+        "ties": 0,
+        "losses": 0,
+        "rounds": 3,
+        "avg": 12.67
+      },
+      {
+        "competitor": "beta",
+        "total": 28,
+        "wins": 0,
+        "ties": 0,
+        "losses": 3,
+        "rounds": 3,
+        "avg": 9.33
+      }
+    ],
+    "integration": [
+      {
+        "competitor": "alpha",
+        "total": 13,
+        "wins": 1,
+        "ties": 0,
+        "losses": 0,
+        "rounds": 1,
+        "avg": 13.0
+      },
+      {
+        "competitor": "beta",
+        "total": 10,
+        "wins": 0,
+        "ties": 0,
+        "losses": 1,
+        "rounds": 1,
+        "avg": 10.0
+      }
+    ],
+    "lifecycle": [
+      {
+        "competitor": "alpha",
+        "total": 13,
+        "wins": 0,
+        "ties": 1,
+        "losses": 0,
+        "rounds": 1,
+        "avg": 13.0
+      },
+      {
+        "competitor": "beta",
+        "total": 13,
+        "wins": 0,
+        "ties": 1,
+        "losses": 0,
+        "rounds": 1,
+        "avg": 13.0
+      },
+      {
+        "competitor": "gamma",
+        "total": 9,
+        "wins": 0,
+        "ties": 0,
+        "losses": 1,
+        "rounds": 1,
+        "avg": 9.0
+      }
+    ],
+    "pattern": [
+      {
+        "competitor": "alpha",
+        "total": 25,
+        "wins": 1,
+        "ties": 0,
+        "losses": 1,
+        "rounds": 2,
+        "avg": 12.5
+      },
+      {
+        "competitor": "beta",
+        "total": 23,
+        "wins": 1,
+        "ties": 0,
+        "losses": 1,
+        "rounds": 2,
+        "avg": 11.5
+      }
+    ],
+    "performance": [
+      {
+        "competitor": "alpha",
+        "total": 11,
+        "wins": 1,
+        "ties": 0,
+        "losses": 0,
+        "rounds": 1,
+        "avg": 11.0
+      },
+      {
+        "competitor": "beta",
+        "total": 7,
+        "wins": 0,
+        "ties": 0,
+        "losses": 1,
+        "rounds": 1,
+        "avg": 7.0
+      }
+    ],
+    "relationship": [
+      {
+        "competitor": "alpha",
+        "total": 15,
+        "wins": 0,
+        "ties": 1,
+        "losses": 0,
+        "rounds": 1,
+        "avg": 15.0
+      },
+      {
+        "competitor": "beta",
+        "total": 15,
+        "wins": 0,
+        "ties": 1,
+        "losses": 0,
+        "rounds": 1,
+        "avg": 15.0
+      },
+      {
+        "competitor": "gamma",
+        "total": 15,
+        "wins": 0,
+        "ties": 1,
+        "losses": 0,
+        "rounds": 1,
+        "avg": 15.0
+      }
+    ],
+    "testing": [
+      {
+        "competitor": "alpha",
+        "total": 9,
+        "wins": 1,
+        "ties": 0,
+        "losses": 0,
+        "rounds": 1,
+        "avg": 9.0
+      },
+      {
+        "competitor": "beta",
+        "total": 7,
+        "wins": 0,
+        "ties": 0,
+        "losses": 1,
+        "rounds": 1,
+        "avg": 7.0
+      }
+    ]
+  },
+  "divergences": [
+    {
+      "round_id": "R11",
+      "divergence_signal": "gray",
+      "spread": 2
+    },
+    {
+      "round_id": "R12",
+      "divergence_signal": "yellow",
+      "spread": 3
+    },
+    {
+      "round_id": "R13",
+      "divergence_signal": "yellow",
+      "spread": 4
+    },
+    {
+      "round_id": "R14",
+      "divergence_signal": "signal",
+      "spread": 5
+    },
+    {
+      "round_id": "R16",
+      "divergence_signal": "signal",
+      "spread": 7
+    }
+  ],
+  "closest_calls": [
+    {
+      "round_id": "R03",
+      "margin": 0,
+      "competitors": [
+        "alpha",
+        "beta"
+      ]
+    },
+    {
+      "round_id": "R04",
+      "margin": 0,
+      "competitors": [
+        "alpha",
+        "beta",
+        "gamma"
+      ]
+    },
+    {
+      "round_id": "R05",
+      "margin": 0,
+      "competitors": [
+        "alpha",
+        "beta",
+        "gamma"
+      ]
+    },
+    {
+      "round_id": "R15",
+      "margin": 1,
+      "competitors": [
+        "alpha",
+        "beta"
+      ]
+    }
+  ],
+  "dimension_totals": {
+    "alpha": {
+      "precision": 60,
+      "recall": 59,
+      "insight": 54
+    },
+    "beta": {
+      "precision": 46,
+      "recall": 44,
+      "insight": 42
+    },
+    "gamma": {
+      "precision": 8,
+      "recall": 8,
+      "insight": 8
+    }
+  }
+}
