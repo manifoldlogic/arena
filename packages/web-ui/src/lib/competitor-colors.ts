@@ -17,6 +17,8 @@ const PALETTE: Record<string, string> = {
   'cursor': '#8b5cf6',         // violet
   'copilot': '#3b82f6',        // blue
   'windsurf': '#06b6d4',       // cyan
+  'maproom-skill': '#eab308',  // gold
+  'ast-grep': '#ec4899',       // pink
 };
 
 /** Ordered fallback colors for competitors not in the palette. */
