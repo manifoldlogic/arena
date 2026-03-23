@@ -28,3 +28,8 @@ htmlcov/
 # Build artifacts
 coverage/
 *.log
+
+# TypeScript build output (declaration files, compiled JS)
+packages/schemas/src/*.d.ts
+packages/schemas/src/*.d.ts.map
+packages/schemas/src/*.js
