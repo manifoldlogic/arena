@@ -1,0 +1,7 @@
+{
+  "tool_input": {
+    "file_path": "/workspace/olympics-v2/results/scored/django/R02.json",
+    "content": "{\"round_id\": \"R02\", \"query_category\": \"architecture\", \"query_text\": \"How is middleware chained?\", \"codebase\": \"django\", \"phase\": 1, \"scores\": {\"maproom\": {\"precision\": 5, \"recall\": 4, \"insight\": 4, \"total\": 13}, \"explore\": {\"precision\": 3, \"recall\": 3, \"insight\": 4, \"total\": 10}, \"baseline\": {\"precision\": 2, \"recall\": 2, \"insight\": 3, \"total\": 7}}, \"measured\": {\"maproom\": {\"tool_calls\": 15, \"wall_time_seconds\": 40.1}, \"explore\": {\"tool_calls\": 28, \"wall_time_seconds\": 55.3}, \"baseline\": {\"tool_calls\": 42, \"wall_time_seconds\": 80.0}}, \"round_winner\": \"maproom\", \"judge_notes\": \"Maproom was most efficient\", \"divergence_signal\": \"gray\"}"
+  },
+  "session_id": "sess_abc456"
+}

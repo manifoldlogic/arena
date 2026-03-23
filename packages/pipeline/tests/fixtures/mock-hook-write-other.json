@@ -1,0 +1,7 @@
+{
+  "tool_input": {
+    "file_path": "/workspace/repos/mattermost/mattermost-webapp/foo.json",
+    "content": "{\"some\": \"data\"}"
+  },
+  "session_id": "sess_other"
+}

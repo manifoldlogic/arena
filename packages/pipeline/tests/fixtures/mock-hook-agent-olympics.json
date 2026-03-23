@@ -1,0 +1,8 @@
+{
+  "tool_input": "[OLYMPICS_ROUND:R01:maproom] Answer the following query about the django codebase...",
+  "tool_response": {
+    "tool_calls": 18,
+    "wall_time_seconds": 45.2
+  },
+  "session_id": "sess_agent123"
+}

@@ -1,0 +1,7 @@
+{
+  "tool_input": {
+    "file_path": "/workspace/olympics-v2/results/scored/django/R01.json",
+    "content": "{\"round_id\": \"R01\", \"query_category\": \"relationship\", \"query_text\": \"What calls the ORM QuerySet?\", \"codebase\": \"django\", \"phase\": 1, \"scores\": {\"maproom\": {\"precision\": 4, \"recall\": 3, \"insight\": 5, \"total\": 12}, \"explore\": {\"precision\": 3, \"recall\": 4, \"insight\": 3, \"total\": 10}}, \"measured\": {\"maproom\": {\"tool_calls\": 18, \"wall_time_seconds\": 45.2}, \"explore\": {\"tool_calls\": 32, \"wall_time_seconds\": 67.8}}, \"round_winner\": \"maproom\", \"judge_notes\": \"Maproom found all three call sites\", \"divergence_signal\": \"signal\"}"
+  },
+  "session_id": "sess_abc123"
+}

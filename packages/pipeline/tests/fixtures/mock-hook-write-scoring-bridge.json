@@ -1,0 +1,7 @@
+{
+  "tool_input": {
+    "file_path": "/workspace/olympics-v2/results/scored/fastapi/BR01.json",
+    "content": "{\"round_id\": \"BR01\", \"query_category\": \"flow\", \"query_text\": \"Trace the request lifecycle\", \"codebase\": \"fastapi\", \"phase\": 2, \"series2_scores\": {\"maproom\": {\"precision\": 4, \"recall\": 4, \"insight\": 3, \"total\": 11}, \"explore\": {\"precision\": 3, \"recall\": 4, \"insight\": 3, \"total\": 10}}, \"series1_scores\": {\"maproom\": {\"precision\": 3, \"recall\": 3, \"insight\": 2}, \"explore\": {\"precision\": 4, \"recall\": 3, \"insight\": 3}}, \"series1_baseline\": {\"maproom\": {\"precision\": 3, \"recall\": 3, \"insight\": 2}, \"explore\": {\"precision\": 3, \"recall\": 2, \"insight\": 2}}, \"measured\": {\"maproom\": {\"tool_calls\": 15, \"wall_time_seconds\": 38.7}, \"explore\": {\"tool_calls\": 22, \"wall_time_seconds\": 52.1}}, \"round_winner\": \"maproom\", \"judge_notes_s2\": \"Series 2 deep analysis\", \"judge_notes_s1\": \"Series 1 notes\", \"divergence_signal\": \"yellow\"}"
+  },
+  "session_id": "sess_def456"
+}
