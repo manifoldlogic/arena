@@ -11,8 +11,10 @@ import {
   Scatter,
   ComposedChart,
   Line,
+  Area,
 } from 'recharts';
 import type { DriftTimeline as DriftTimelineData } from '@/lib/analytics';
+import { getCompetitorColor } from '@/lib/competitor-colors';
 
 interface Props {
   data: DriftTimelineData;
@@ -27,6 +29,9 @@ export function DriftTimeline({ data }: Props) {
     );
   }
 
+  const colorA = getCompetitorColor(data.competitorA);
+  const colorB = getCompetitorColor(data.competitorB);
+
   const chartData = data.points.map((p) => ({
     round: p.roundId,
     delta: Number(p.delta.toFixed(2)),
@@ -34,6 +39,9 @@ export function DriftTimeline({ data }: Props) {
     isAnomaly: p.isAnomaly,
     // Separate field for anomaly scatter points
     anomalyDelta: p.isAnomaly ? Number(p.delta.toFixed(2)) : null,
+    // Split delta for positive/negative area fills
+    deltaPositive: p.delta >= 0 ? Number(p.delta.toFixed(2)) : 0,
+    deltaNegative: p.delta < 0 ? Number(p.delta.toFixed(2)) : 0,
   }));
 
   return (
@@ -61,7 +69,32 @@ export function DriftTimeline({ data }: Props) {
               return [value, name === 'delta' ? 'Rolling Avg' : 'Raw Delta'];
             }}
           />
-          <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
+          <Area
+            type="monotone"
+            dataKey="deltaPositive"
+            stroke="none"
+            fill={colorA}
+            fillOpacity={0.05}
+            isAnimationActive={false}
+            legendType="none"
+            tooltipType="none"
+          />
+          <Area
+            type="monotone"
+            dataKey="deltaNegative"
+            stroke="none"
+            fill={colorB}
+            fillOpacity={0.05}
+            isAnimationActive={false}
+            legendType="none"
+            tooltipType="none"
+          />
+          <ReferenceLine
+            y={0}
+            stroke="hsl(var(--muted-foreground))"
+            strokeWidth={2}
+            label={{ value: 'Equal', position: 'right', fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+          />
           <Line
             type="monotone"
             dataKey="delta"
