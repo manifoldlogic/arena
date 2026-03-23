@@ -23,11 +23,23 @@
     --ring: 221.2 83.2% 53.3%;
     --radius: 0.5rem;
 
-    --chart-1: 221 83% 53%;
-    --chart-2: 24 95% 53%;
-    --chart-3: 142 71% 45%;
-    --chart-4: 271 76% 53%;
-    --chart-5: 349 89% 60%;
+    /* Competitor role colors */
+    --competitor-a: 217 91% 65%;
+    --competitor-b: 24 100% 65%;
+
+    /* Dimension colors (radar / breakdown) */
+    --dim-precision: 217 91% 65%;
+    --dim-recall: 142 76% 50%;
+    --dim-insight: 280 67% 60%;
+
+    /* Signal colors (status indicators) */
+    --signal-ok: 142 76% 50%;
+    --signal-warn: 45 90% 60%;
+    --signal-alert: 0 84% 60%;
+
+    /* Chart chrome */
+    --chart-grid: 220 13% 91%;
+    --chart-axis: 220 9% 46%;
   }
 
   .dark {
@@ -50,11 +62,23 @@
     --ring: 224.3 76.3% 48%;
     --radius: 0.5rem;
 
-    --chart-1: 217 91% 60%;
-    --chart-2: 24 100% 60%;
-    --chart-3: 142 76% 55%;
-    --chart-4: 271 81% 66%;
-    --chart-5: 349 95% 65%;
+    /* Competitor role colors */
+    --competitor-a: 217 91% 70%;
+    --competitor-b: 24 100% 70%;
+
+    /* Dimension colors (radar / breakdown) */
+    --dim-precision: 217 91% 70%;
+    --dim-recall: 142 76% 55%;
+    --dim-insight: 280 67% 65%;
+
+    /* Signal colors (status indicators) */
+    --signal-ok: 142 76% 55%;
+    --signal-warn: 45 90% 65%;
+    --signal-alert: 0 84% 65%;
+
+    /* Chart chrome */
+    --chart-grid: 220 13% 20%;
+    --chart-axis: 220 9% 55%;
   }
 }
 
