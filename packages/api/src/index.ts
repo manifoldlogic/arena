@@ -184,7 +184,7 @@ async function routeRequest(req: Request): Promise<Response> {
   }
 
   if (path === "/api/rounds") {
-    return json(getRoundDetails(scored));
+    return json(scored);
   }
 
   if (path === "/api/analytics/divergence") {
