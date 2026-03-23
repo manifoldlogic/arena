@@ -16,14 +16,14 @@ function SortIndicator({ field, activeField, dir }: {
   activeField: SortField;
   dir: SortDir;
 }) {
-  if (field !== activeField) return <span className="text-slate-300 ml-1">↕</span>;
+  if (field !== activeField) return <span className="text-muted-foreground/50 ml-1">↕</span>;
   return <span className="ml-1">{dir === 'asc' ? '↑' : '↓'}</span>;
 }
 
 export function RoundListTable({ groups, sortField, sortDir, onSort }: RoundListTableProps) {
   if (groups.length === 0) {
     return (
-      <div className="text-center py-12 text-slate-500">
+      <div className="text-center py-12 text-muted-foreground">
         No rounds match the current filters.
       </div>
     );
@@ -33,39 +33,39 @@ export function RoundListTable({ groups, sortField, sortDir, onSort }: RoundList
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-slate-200 text-left">
+          <tr className="border-b border-border text-left">
             <th
-              className="px-3 py-2 font-medium text-slate-600 cursor-pointer select-none"
+              className="px-3 py-2 font-medium text-muted-foreground cursor-pointer select-none"
               onClick={() => onSort('roundId')}
             >
               Round
               <SortIndicator field="roundId" activeField={sortField} dir={sortDir} />
             </th>
             <th
-              className="px-3 py-2 font-medium text-slate-600 cursor-pointer select-none"
+              className="px-3 py-2 font-medium text-muted-foreground cursor-pointer select-none"
               onClick={() => onSort('codebase')}
             >
               Codebase
               <SortIndicator field="codebase" activeField={sortField} dir={sortDir} />
             </th>
-            <th className="px-3 py-2 font-medium text-slate-600">Type</th>
-            <th className="px-3 py-2 font-medium text-slate-600">Competitors</th>
+            <th className="px-3 py-2 font-medium text-muted-foreground">Type</th>
+            <th className="px-3 py-2 font-medium text-muted-foreground">Competitors</th>
             <th
-              className="px-3 py-2 font-medium text-slate-600 cursor-pointer select-none"
+              className="px-3 py-2 font-medium text-muted-foreground cursor-pointer select-none"
               onClick={() => onSort('total')}
             >
               Best Score
               <SortIndicator field="total" activeField={sortField} dir={sortDir} />
             </th>
             <th
-              className="px-3 py-2 font-medium text-slate-600 cursor-pointer select-none"
+              className="px-3 py-2 font-medium text-muted-foreground cursor-pointer select-none"
               onClick={() => onSort('winner')}
             >
               Winner
               <SortIndicator field="winner" activeField={sortField} dir={sortDir} />
             </th>
-            <th className="px-3 py-2 font-medium text-slate-600">Difficulty</th>
-            <th className="px-3 py-2 font-medium text-slate-600">Divergence</th>
+            <th className="px-3 py-2 font-medium text-muted-foreground">Difficulty</th>
+            <th className="px-3 py-2 font-medium text-muted-foreground">Divergence</th>
           </tr>
         </thead>
         <tbody>
@@ -79,7 +79,7 @@ export function RoundListTable({ groups, sortField, sortDir, onSort }: RoundList
             return (
               <tr
                 key={group.roundId}
-                className="border-b border-slate-100 hover:bg-slate-50 transition-colors"
+                className="border-b border-border hover:bg-muted/50 transition-colors"
               >
                 <td className="px-3 py-2">
                   <Link
@@ -89,9 +89,9 @@ export function RoundListTable({ groups, sortField, sortDir, onSort }: RoundList
                     {group.roundId}
                   </Link>
                 </td>
-                <td className="px-3 py-2 text-slate-700">{group.codebase}</td>
+                <td className="px-3 py-2 text-foreground">{group.codebase}</td>
                 <td className="px-3 py-2">
-                  <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+                  <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
                     {group.roundType}
                   </span>
                 </td>
@@ -108,7 +108,7 @@ export function RoundListTable({ groups, sortField, sortDir, onSort }: RoundList
                     ))}
                   </div>
                 </td>
-                <td className="px-3 py-2 font-mono text-slate-700">
+                <td className="px-3 py-2 font-mono text-foreground">
                   {bestScore > 0 ? bestScore : '—'}
                 </td>
                 <td className="px-3 py-2">
@@ -120,11 +120,11 @@ export function RoundListTable({ groups, sortField, sortDir, onSort }: RoundList
                       {winner}
                     </span>
                   ) : (
-                    <span className="text-slate-400">—</span>
+                    <span className="text-muted-foreground">—</span>
                   )}
                 </td>
                 <td className="px-3 py-2">
-                  {difficulty ? <DifficultyBadge difficulty={difficulty} /> : <span className="text-slate-400">—</span>}
+                  {difficulty ? <DifficultyBadge difficulty={difficulty} /> : <span className="text-muted-foreground">—</span>}
                 </td>
                 <td className="px-3 py-2">
                   <DivergenceBadge signal={divergence} difficulty={difficulty} />

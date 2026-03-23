@@ -48,14 +48,14 @@ export function DimensionRadar({
       g.append('circle')
         .attr('r', r)
         .attr('fill', 'none')
-        .attr('stroke', '#e2e8f0')
+        .style('stroke', 'hsl(var(--border))')
         .attr('stroke-width', 0.5);
 
       g.append('text')
         .attr('x', 4)
         .attr('y', -r)
         .attr('dy', '0.35em')
-        .attr('fill', '#94a3b8')
+        .style('fill', 'hsl(var(--muted-foreground))')
         .attr('font-size', '10px')
         .text(((maxValue / levels) * level).toFixed(0));
     }
@@ -71,7 +71,7 @@ export function DimensionRadar({
         .attr('y1', 0)
         .attr('x2', x)
         .attr('y2', y)
-        .attr('stroke', '#cbd5e1')
+        .style('stroke', 'hsl(var(--border))')
         .attr('stroke-width', 1);
 
       const labelOffset = 1.15;
@@ -80,7 +80,7 @@ export function DimensionRadar({
         .attr('y', Math.sin(angle) * size * labelOffset)
         .attr('text-anchor', 'middle')
         .attr('dominant-baseline', 'central')
-        .attr('fill', '#475569')
+        .style('fill', 'hsl(var(--foreground))')
         .attr('font-size', '12px')
         .attr('font-weight', '600')
         .text(axis.charAt(0).toUpperCase() + axis.slice(1));
@@ -115,7 +115,7 @@ export function DimensionRadar({
           .attr('cy', Math.sin(angle) * r)
           .attr('r', 4)
           .attr('fill', color)
-          .attr('stroke', '#fff')
+          .style('stroke', 'hsl(var(--background))')
           .attr('stroke-width', 1.5)
           .style('cursor', 'pointer')
           .on('mouseenter', (event: MouseEvent) => {
@@ -155,7 +155,7 @@ export function DimensionRadar({
       />
       <div
         ref={tooltipRef}
-        className="absolute hidden bg-slate-900 text-white text-xs px-2 py-1 rounded pointer-events-none whitespace-nowrap"
+        className="absolute hidden bg-popover text-popover-foreground text-xs px-2 py-1 rounded pointer-events-none whitespace-nowrap shadow-md"
       />
     </div>
   );

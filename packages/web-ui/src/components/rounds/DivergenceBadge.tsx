@@ -2,9 +2,9 @@ import type { DivergenceSignal, QueryDifficulty } from '@arena/schemas';
 import { cn } from '@/lib/utils';
 
 const BADGE_STYLES: Record<DivergenceSignal, string> = {
-  gray: 'bg-slate-100 text-slate-600',
-  yellow: 'bg-amber-100 text-amber-700',
-  signal: 'bg-red-100 text-red-700',
+  gray: 'bg-muted text-muted-foreground',
+  yellow: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  signal: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 };
 
 const LABELS: Record<DivergenceSignal, string> = {
@@ -39,9 +39,9 @@ export function DivergenceBadge({ signal, difficulty, className }: DivergenceBad
 }
 
 const DIFFICULTY_STYLES: Record<QueryDifficulty, string> = {
-  breadth: 'bg-blue-100 text-blue-700',
-  depth: 'bg-purple-100 text-purple-700',
-  constrained: 'bg-orange-100 text-orange-700',
+  breadth: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  depth: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+  constrained: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
 };
 
 const DIFFICULTY_LABELS: Record<QueryDifficulty, string> = {
