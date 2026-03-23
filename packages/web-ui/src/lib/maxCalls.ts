@@ -11,4 +11,6 @@
 export const maxCallsMap: Record<string, number> = {
   maproom: 100,
   explore: 150,
+  'gemini-cli': 120,
+  aider: 80,
 };

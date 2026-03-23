@@ -17,8 +17,43 @@
           "name": "Pattern Recognition",
           "round_range": ["R23", "R27"],
           "theme": "Deeper architectural queries — do competitors adapt strategy as familiarity grows?",
-          "status": "in_progress",
-          "thesis": "Structured traversal outperforms exhaustive grep as query complexity increases."
+          "status": "closed",
+          "thesis": "Breadth queries converge — 4 consecutive ties. Depth query R28 produced widest spread (2pts). Paradigm difference is in reasoning depth, not coverage."
+        },
+        {
+          "id": "s1-ch3",
+          "name": "Depth Probes",
+          "round_range": ["R28", "R30"],
+          "theme": "Testing whether depth and constrained queries break the convergence pattern.",
+          "status": "in_progress"
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "name": "The Django Deep Dive",
+      "codebase": "django",
+      "chapters": [
+        {
+          "id": "s2-ch1",
+          "name": "ORM Foundations",
+          "round_range": ["D01", "D05"],
+          "theme": "Testing search paradigms against a mature Python codebase with deep ORM internals.",
+          "status": "in_progress"
+        }
+      ]
+    },
+    {
+      "id": "s3",
+      "name": "The FastAPI Sprint",
+      "codebase": "fastapi",
+      "chapters": [
+        {
+          "id": "s3-ch1",
+          "name": "Core Architecture",
+          "round_range": ["F01", "F05"],
+          "theme": "How do search paradigms handle a small, well-structured async Python codebase?",
+          "status": "in_progress"
         }
       ]
     }

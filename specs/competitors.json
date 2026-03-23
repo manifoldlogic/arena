@@ -13,6 +13,20 @@
       "model": "claude-haiku-4-5-20251001",
       "tools": ["Grep", "Glob", "Read"],
       "performance_budget": { "max_calls": 150, "max_time_s": 400 }
+    },
+    {
+      "name": "gemini-cli",
+      "paradigm": "gemini-native",
+      "model": "gemini-2.5-pro",
+      "tools": ["search", "read_file", "list_dir"],
+      "performance_budget": { "max_calls": 120, "max_time_s": 350 }
+    },
+    {
+      "name": "aider",
+      "paradigm": "edit-focused",
+      "model": "claude-sonnet-4-20250514",
+      "tools": ["search", "read", "edit"],
+      "performance_budget": { "max_calls": 80, "max_time_s": 250 }
     }
   ]
 }
