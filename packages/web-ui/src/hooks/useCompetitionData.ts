@@ -75,7 +75,6 @@ function generateMockRounds(): RoundResult[] {
   for (const idx of closeCallIndices) {
     const pairStart = idx * 2;
     if (pairStart + 1 < rounds.length) {
-      const target = rounds[pairStart].total!;
       const other = rounds[pairStart + 1];
       const diff = Math.round(rng()); // 0 or 1
       other.precision = rounds[pairStart].precision!;

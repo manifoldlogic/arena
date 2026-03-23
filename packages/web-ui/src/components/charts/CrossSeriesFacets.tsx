@@ -1,7 +1,7 @@
 /**
  * FR-3: Observable Plot faceted view — per-competitor performance across (phase, codebase) series.
  */
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useMemo } from 'react';
 import * as Plot from '@observablehq/plot';
 import type { RoundResult } from '@arena/schemas';
 
@@ -12,7 +12,10 @@ interface Props {
 export function CrossSeriesFacets({ rounds }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const scored = rounds.filter((r) => r.source === 'score' && r.total != null);
+  const scored = useMemo(
+    () => rounds.filter((r) => r.source === 'score' && r.total != null),
+    [rounds],
+  );
 
   useEffect(() => {
     if (!containerRef.current || scored.length === 0) return;

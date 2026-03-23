@@ -306,4 +306,81 @@ describe('computeCategoryPerformanceMatrix', () => {
     expect(result.cells).toHaveLength(0);
     expect(result.categories).toHaveLength(0);
   });
+
+  it('handles empty input', () => {
+    const result = computeCategoryPerformanceMatrix([]);
+    expect(result.cells).toHaveLength(0);
+    expect(result.competitors).toHaveLength(0);
+    expect(result.categories).toHaveLength(0);
+  });
+});
+
+// ── Edge cases ──────────────────────────────────────────────────────
+
+describe('edge cases', () => {
+  it('computeDivergenceMatrix handles single competitor (spread=0)', () => {
+    const solo = [mkRound({ round_id: 'S1', competitor: 'Alpha', total: 8, query_category: 'flow' })];
+    const { rounds, competitors } = computeDivergenceMatrix(solo);
+    expect(competitors).toEqual(['Alpha']);
+    expect(rounds).toHaveLength(1);
+    expect(rounds[0].spread).toBe(0);
+    expect(rounds[0].signal).toBe('gray');
+  });
+
+  it('computeDivergenceMatrix handles empty input', () => {
+    const { rounds, competitors } = computeDivergenceMatrix([]);
+    expect(rounds).toHaveLength(0);
+    expect(competitors).toHaveLength(0);
+  });
+
+  it('computeClosestCalls handles all-tie rounds', () => {
+    const ties = [
+      mkRound({ round_id: 'T1', competitor: 'Alpha', total: 9, precision: 3, recall: 3, insight: 3, query_category: 'flow' }),
+      mkRound({ round_id: 'T1', competitor: 'Beta',  total: 9, precision: 3, recall: 3, insight: 3, query_category: 'flow' }),
+      mkRound({ round_id: 'T2', competitor: 'Alpha', total: 7, precision: 2, recall: 3, insight: 2, query_category: 'pattern' }),
+      mkRound({ round_id: 'T2', competitor: 'Beta',  total: 7, precision: 2, recall: 3, insight: 2, query_category: 'pattern' }),
+    ];
+    const calls = computeClosestCalls(ties);
+    expect(calls).toHaveLength(2);
+    calls.forEach((c) => {
+      expect(c.margin).toBe(0);
+      expect(c.swingDimensions).toHaveLength(0);
+    });
+  });
+
+  it('computeClosestCalls handles empty input', () => {
+    expect(computeClosestCalls([])).toHaveLength(0);
+  });
+
+  it('computeDriftTimeline handles empty input', () => {
+    const result = computeDriftTimeline([], 'A', 'B');
+    expect(result.points).toHaveLength(0);
+  });
+
+  it('computeDimensionTotals handles competitor missing from some rounds', () => {
+    const partial = [
+      mkRound({ round_id: 'P1', competitor: 'Alpha', total: 9, precision: 3, recall: 3, insight: 3 }),
+      mkRound({ round_id: 'P1', competitor: 'Beta',  total: 8, precision: 3, recall: 3, insight: 2 }),
+      // P2 only has Alpha
+      mkRound({ round_id: 'P2', competitor: 'Alpha', total: 10, precision: 4, recall: 3, insight: 3 }),
+    ];
+    const results = computeDimensionTotals(partial);
+    const alpha = results.find((r) => r.competitor === 'Alpha')!;
+    const beta = results.find((r) => r.competitor === 'Beta')!;
+    expect(alpha.snapshots).toHaveLength(2);
+    expect(beta.snapshots).toHaveLength(1);
+    // Beta only participated in P1
+    expect(beta.snapshots[0].total).toBe(8);
+  });
+
+  it('computeDivergenceMatrix handles single round with many competitors', () => {
+    const multi = [
+      mkRound({ round_id: 'M1', competitor: 'A', total: 3, query_category: 'flow' }),
+      mkRound({ round_id: 'M1', competitor: 'B', total: 8, query_category: 'flow' }),
+      mkRound({ round_id: 'M1', competitor: 'C', total: 10, query_category: 'flow' }),
+    ];
+    const { rounds } = computeDivergenceMatrix(multi);
+    expect(rounds[0].spread).toBe(7); // 10-3
+    expect(rounds[0].signal).toBe('signal');
+  });
 });

@@ -32,9 +32,8 @@ export function CategoryHeatmap({ data }: Props) {
   const colorScale = useMemo(() => {
     const allAvgs = data.cells.map((c) => c.avgTotal);
     const domain = allAvgs.length > 0 ? [Math.min(...allAvgs), Math.max(...allAvgs)] : [0, 15];
-    return isDark
-      ? d3.scaleSequential(d3.interpolateBlues).domain(domain)
-      : d3.scaleSequential(d3.interpolateBlues).domain(domain);
+    const interpolator = isDark ? d3.interpolateYlGnBu : d3.interpolateBlues;
+    return d3.scaleSequential(interpolator).domain(domain);
   }, [data.cells, isDark]);
 
   useEffect(() => {

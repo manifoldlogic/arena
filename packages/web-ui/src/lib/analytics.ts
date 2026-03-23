@@ -329,14 +329,24 @@ export function computeCategoryPerformanceMatrix(
   const competitors = uniqueCompetitors(scored);
   const categoriesSet = new Set<QueryCategory>();
 
-  // Accumulator: key = "competitor|category"
-  const acc = new Map<string, { sum: number; count: number; min: number; max: number }>();
+  // Accumulator keyed by "competitor\0category" (null byte avoids collisions with any name)
+  const acc = new Map<
+    string,
+    { competitor: string; category: QueryCategory; sum: number; count: number; min: number; max: number }
+  >();
 
   for (const r of scored) {
     const cat = r.query_category!;
     categoriesSet.add(cat);
-    const key = `${r.competitor}|${cat}`;
-    const entry = acc.get(key) ?? { sum: 0, count: 0, min: Infinity, max: -Infinity };
+    const key = `${r.competitor}\0${cat}`;
+    const entry = acc.get(key) ?? {
+      competitor: r.competitor,
+      category: cat,
+      sum: 0,
+      count: 0,
+      min: Infinity,
+      max: -Infinity,
+    };
     entry.sum += r.total!;
     entry.count += 1;
     entry.min = Math.min(entry.min, r.total!);
@@ -347,11 +357,10 @@ export function computeCategoryPerformanceMatrix(
   const categories = [...categoriesSet].sort();
 
   const cells: CategoryCell[] = [];
-  for (const [key, entry] of acc) {
-    const [competitor, category] = key.split('|');
+  for (const entry of acc.values()) {
     cells.push({
-      competitor,
-      category: category as QueryCategory,
+      competitor: entry.competitor,
+      category: entry.category,
       avgTotal: entry.sum / entry.count,
       count: entry.count,
       minTotal: entry.min,

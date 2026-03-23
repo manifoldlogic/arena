@@ -2,8 +2,6 @@
  * FR-2: Drift detection timeline — rolling average delta between two competitors.
  */
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -12,6 +10,7 @@ import {
   ResponsiveContainer,
   Scatter,
   ComposedChart,
+  Line,
 } from 'recharts';
 import type { DriftTimeline as DriftTimelineData } from '@/lib/analytics';
 
