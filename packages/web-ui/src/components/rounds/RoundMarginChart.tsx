@@ -28,7 +28,6 @@ export function RoundMarginChart({ margins, className }: RoundMarginChartProps) 
   const data = margins.map((m) => ({
     roundId: m.roundId,
     margin: m.margin,
-    label: `${m.roundId} (${m.codebase})`,
   }));
 
   return (

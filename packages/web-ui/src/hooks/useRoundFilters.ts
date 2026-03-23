@@ -115,8 +115,10 @@ export function useRoundFilters(): RoundFiltersState {
             cmp = a.codebase.localeCompare(b.codebase);
             break;
           case 'total': {
-            const maxA = Math.max(...a.results.map((r) => r.total ?? 0));
-            const maxB = Math.max(...b.results.map((r) => r.total ?? 0));
+            const scoresA = a.results.map((r) => r.total ?? 0);
+            const scoresB = b.results.map((r) => r.total ?? 0);
+            const maxA = scoresA.length > 0 ? Math.max(...scoresA) : 0;
+            const maxB = scoresB.length > 0 ? Math.max(...scoresB) : 0;
             cmp = maxA - maxB;
             break;
           }

@@ -95,11 +95,11 @@ export function DimensionRadar({
 
     series.forEach((s) => {
       const color = getCompetitorColor(s.competitor);
+      const pathData = lineGen(s.dataPoints);
 
       // Polygon fill
       g.append('path')
-        .datum(s.dataPoints)
-        .attr('d', lineGen as never)
+        .attr('d', pathData)
         .attr('fill', color)
         .attr('fill-opacity', 0.15)
         .attr('stroke', color)

@@ -70,7 +70,8 @@ export function RoundListTable({ groups, sortField, sortDir, onSort }: RoundList
         <tbody>
           {groups.map((group) => {
             const winner = group.results.find((r) => r.round_winner)?.round_winner;
-            const bestScore = Math.max(...group.results.map((r) => r.total ?? 0));
+            const scores = group.results.map((r) => r.total ?? 0);
+            const bestScore = scores.length > 0 ? Math.max(...scores) : 0;
             const divergence = group.results.find((r) => r.divergence_signal)?.divergence_signal;
 
             return (

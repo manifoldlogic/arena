@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   computeH2HAverages,
@@ -40,14 +40,17 @@ export function useHeadToHead(): UseHeadToHeadResult {
   const competitorA = searchParams.get('a') ?? competitors[0] ?? '';
   const competitorB = searchParams.get('b') ?? competitors[1] ?? '';
 
-  const setCompetitors = (a: string, b: string) => {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      next.set('a', a);
-      next.set('b', b);
-      return next;
-    });
-  };
+  const setCompetitors = useCallback(
+    (a: string, b: string) => {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.set('a', a);
+        next.set('b', b);
+        return next;
+      });
+    },
+    [setSearchParams],
+  );
 
   const averages = useMemo(
     () => computeH2HAverages(MOCK_ROUNDS, competitorA, competitorB),

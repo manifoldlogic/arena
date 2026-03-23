@@ -112,6 +112,19 @@ describe('groupRoundsByRoundId', () => {
     expect(groups[0].codebase).toBe('fastapi');
     expect(groups[0].roundType).toBe('bridge');
   });
+
+  it('handles 3+ competitors in the same round', () => {
+    const rounds = [
+      makeResult({ round_id: 'r1', competitor: 'claude-code', total: 24 }),
+      makeResult({ round_id: 'r1', competitor: 'codex-cli', total: 18 }),
+      makeResult({ round_id: 'r1', competitor: 'gemini-cli', total: 20 }),
+    ];
+    const groups = groupRoundsByRoundId(rounds);
+    expect(groups).toHaveLength(1);
+    expect(groups[0].results).toHaveLength(3);
+    const names = groups[0].results.map((r) => r.competitor).sort();
+    expect(names).toEqual(['claude-code', 'codex-cli', 'gemini-cli']);
+  });
 });
 
 // ---------------------------------------------------------------------------
