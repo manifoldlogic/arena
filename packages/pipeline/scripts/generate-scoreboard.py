@@ -27,7 +27,7 @@ def load_rounds(data_dir):
     """Load and parse rounds from rounds.jsonl.
 
     Args:
-        data_dir: Path to the Olympics data directory.
+        data_dir: Path to the Arena data directory.
 
     Returns:
         List of parsed JSON dicts. Malformed lines are skipped with stderr warning.

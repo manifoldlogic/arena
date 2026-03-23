@@ -248,7 +248,7 @@ def main(stdin_input=None):
     Args:
         stdin_input: Optional dict for testing (parsed JSON). If None, reads from stdin.
     """
-    parser = argparse.ArgumentParser(description="Log round results for Olympics scoreboard")
+    parser = argparse.ArgumentParser(description="Log round results for Arena scoreboard")
     parser.add_argument("--mode", choices=["agent", "score"], required=True,
                         help="Mode: 'agent' or 'score'")
     args = parser.parse_args()

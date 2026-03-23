@@ -4,7 +4,7 @@ import json
 import os
 import sys
 import importlib.util
-from unittest.mock import patch, call
+from unittest.mock import patch
 
 import pytest
 
