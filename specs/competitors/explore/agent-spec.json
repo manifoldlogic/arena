@@ -1,0 +1,50 @@
+{
+    "name": "explore",
+    "paradigm": "text",
+    "model": "haiku",
+    "tools": ["Bash", "Grep", "Glob", "Read"],
+    "mcp_servers": [],
+    "setup_script": null,
+    "index_script": null,
+    "system_prompt_file": "competitors/explore/prompt.md",
+    "performance_budget": {
+        "max_tool_calls": 80,
+        "max_wall_time_seconds": 600,
+        "target_tool_calls": 54,
+        "target_wall_time_seconds": 121
+    },
+    "failure_modes": [
+        {
+            "id": "FM-E1",
+            "name": "Search loop inflation",
+            "description": "Agent issues many Grep/Glob calls with diminishing returns, rephrasing the same concept instead of switching to Read. Tool call counts inflate 2-3x without proportional coverage gains.",
+            "severity": "high",
+            "series1_evidence": "R5 (74 calls), R12 (69 calls), R14 (72 calls), R15 (77 calls), R16 (75 calls), R17 (80 calls). In R12 Explore used 69 calls vs Maproom's 33 — 52% more calls — yet scored lower (9 vs 11). In R17 Explore used 80 calls to find 30+ locations that Maproom covered in 39 calls.",
+            "mitigation": "System prompt constrains search phase to 8-12 calls before mandatory switch to Read/synthesis."
+        },
+        {
+            "id": "FM-E2",
+            "name": "False negative on absence-proof queries",
+            "description": "When asked whether a feature exists, agent exhaustively searches but incorrectly concludes the feature is absent, missing implementations that use different terminology or indirect patterns.",
+            "severity": "high",
+            "series1_evidence": "R15 (TTL caching). Explore incorrectly concluded 'NO EXPLICIT TTL CACHING' despite custom status TTL implementation using calculateExpiryTime() with moment.js duration presets (30min, 1hr, 4hrs). This was the only accuracy failure across all 15 rounds (Explore scored 2/3 accuracy). Explore found 12 caching types but missed the one that directly answered the query.",
+            "mitigation": "System prompt requires stating what was searched AND what was not found. For absence-proof queries, agent must try synonym/alternative-term searches before concluding absence."
+        },
+        {
+            "id": "FM-E3",
+            "name": "Breadth over depth under time pressure",
+            "description": "Agent finds many surface-level matches but does not deeply read files to extract precise answers, leading to less accurate or less insightful responses despite high coverage.",
+            "severity": "medium",
+            "series1_evidence": "R12 (event types): Explore found event categories but undercounted WebSocket events vs Maproom's accurate ~57 count — scored 9 vs 11. R15: Explore enumerated 12 caching types but missed the key TTL implementation detail. The pattern is consistent: Explore's perfect 45/45 coverage score coexists with lower accuracy (44/45) and lower insight quality.",
+            "mitigation": "System prompt instructs agent to Read at least 3-5 key files in full after initial search, prioritizing depth on the most relevant hits."
+        },
+        {
+            "id": "FM-E4",
+            "name": "Inefficiency on well-scoped queries",
+            "description": "Even on queries where the answer space is small, Explore uses more tool calls than necessary because it searches broadly by default rather than narrowing early.",
+            "severity": "medium",
+            "series1_evidence": "R11 (WebSocket management): Explore used 30 calls vs Maproom's 19 (37% more) on a focused topic. R4 (env vars): Explore used 50 calls vs 27 (46% more). Across all 15 rounds, Explore averaged 54.8 calls vs Maproom's 37.9 — a structural 31% overhead even when both reached the same quality.",
+            "mitigation": "System prompt instructs agent to plan search scope before executing and to stop searching when confident, not when exhausted."
+        }
+    ]
+}

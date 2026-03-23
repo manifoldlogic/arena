@@ -1,0 +1,117 @@
+{
+  "benchmark": {
+    "name": "Search Olympics v2",
+    "version": "2.0",
+    "runs_per_query": 3,
+    "codebase": {
+      "name": "mattermost-webapp",
+      "path": "/workspace/repos/mattermost/mattermost-webapp",
+      "description": "Mattermost webapp frontend, ~59k indexed chunks"
+    },
+    "installation_dir": "/workspace/_SPECS/mattermost/harness/search-olympics"
+  },
+  "model_config": {
+    "agent_temperature": 0.7,
+    "judge_temperature": 0.0
+  },
+  "agents": [
+    {
+      "id": "explore",
+      "name": "Explore Agent",
+      "prompt_file": "prompts/explore-agent.md",
+      "model": "haiku",
+      "tools": ["Grep", "Glob", "Read"]
+    },
+    {
+      "id": "maproom",
+      "name": "Maproom Agent",
+      "prompt_file": "prompts/maproom-agent.md",
+      "model": "haiku",
+      "tools": ["Bash", "Grep", "Glob", "Read"]
+    }
+  ],
+  "queries": [
+    {
+      "id": "Q4",
+      "text": "How are environment variables loaded and validated?",
+      "category": "Conceptual",
+      "difficulty": "medium",
+      "ground_truth_file": "ground-truth/Q4_env-vars.md"
+    },
+    {
+      "id": "Q5",
+      "text": "Find where HTTP requests are made to external services",
+      "category": "Conceptual",
+      "difficulty": "medium",
+      "ground_truth_file": "ground-truth/Q5_http-external.md"
+    },
+    {
+      "id": "Q6",
+      "text": "What happens when a user signs up? Trace the full flow.",
+      "category": "Architecture",
+      "difficulty": "hard",
+      "ground_truth_file": "ground-truth/Q6_signup-flow.md"
+    },
+    {
+      "id": "Q7",
+      "text": "Find all middleware and explain the order they execute",
+      "category": "Architecture",
+      "difficulty": "hard",
+      "ground_truth_file": "ground-truth/Q7_middleware.md"
+    },
+    {
+      "id": "Q8",
+      "text": "What components render the UserProfile component?",
+      "category": "Relationship",
+      "difficulty": "medium",
+      "ground_truth_file": "ground-truth/Q8_userprofile.md"
+    },
+    {
+      "id": "Q9",
+      "text": "Find all the places that import or use the Logger class",
+      "category": "Relationship",
+      "difficulty": "medium",
+      "query_type": "negative",
+      "ground_truth_file": "ground-truth/Q9_logger.md"
+    },
+    {
+      "id": "Q10",
+      "text": "How are feature flags checked throughout the code?",
+      "category": "Pattern",
+      "difficulty": "medium",
+      "ground_truth_file": "ground-truth/Q10_feature-flags.md"
+    },
+    {
+      "id": "Q11",
+      "text": "Where are WebSocket connections managed and cleaned up?",
+      "category": "Bug Investigation",
+      "difficulty": "hard",
+      "ground_truth_file": "ground-truth/Q11_websocket-management.md"
+    },
+    {
+      "id": "Q12",
+      "text": "Find all event types/names that are emitted in this codebase",
+      "category": "Symbol-level",
+      "difficulty": "hard",
+      "ground_truth_file": "ground-truth/Q12_event-types.md"
+    }
+  ],
+  "scoring": {
+    "speed": {
+      "thresholds": [45, 60, 90, 120],
+      "scores": [5, 4, 3, 2, 1],
+      "description": "<45s=5, 45-60s=4, 60-90s=3, 90-120s=2, >120s=1"
+    },
+    "efficiency": {
+      "thresholds": [20, 30, 45, 60],
+      "scores": [5, 4, 3, 2, 1],
+      "description": "<20 calls=5, 20-30=4, 30-45=3, 45-60=2, >60=1"
+    },
+    "coverage": {
+      "judge_prompt_file": "prompts/judge-coverage.md"
+    },
+    "accuracy": {
+      "judge_prompt_file": "prompts/judge-accuracy.md"
+    }
+  }
+}

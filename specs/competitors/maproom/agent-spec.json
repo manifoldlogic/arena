@@ -1,0 +1,16 @@
+{
+  "name": "maproom",
+  "paradigm": "indexed-fts",
+  "model": "claude-haiku-4-5-20251001",
+  "tools": ["Bash", "Grep", "Glob", "Read"],
+  "mcp_servers": [],
+  "setup_script": "competitors/maproom/setup.sh",
+  "index_script": "competitors/maproom/setup.sh",
+  "system_prompt_file": "competitors/maproom/prompt.md",
+  "performance_budget": {
+    "max_tool_calls": 60,
+    "max_wall_time_seconds": 600,
+    "target_tool_calls": 25,
+    "target_wall_time_seconds": 120
+  }
+}

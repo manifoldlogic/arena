@@ -1,0 +1,37 @@
+{
+    "codebases": [
+        {
+            "name": "fastapi",
+            "language": "python",
+            "size_loc": "~107k (19k core)",
+            "role": "Contrast: small + dynamic typing",
+            "github_url": "https://github.com/tiangolo/fastapi",
+            "local_path": "/workspace/repos/fastapi-olympics",
+            "pinned_sha": "64feaec80244578bbdabe51e866bcfad1df8b708",
+            "maproom_index_path": "sqlite:///home/vscode/.maproom/mattermost/maproom.db",
+            "maproom_repo_name": "tiangolo/fastapi"
+        },
+        {
+            "name": "django",
+            "language": "python",
+            "size_loc": "~202k",
+            "role": "Medium: class-heavy, ORM patterns",
+            "github_url": "https://github.com/django/django",
+            "local_path": "/workspace/repos/django-olympics",
+            "pinned_sha": "d9adcfbd5e3ba5859cc0ce6e2e67f533efbc8f9b",
+            "maproom_index_path": "sqlite:///home/vscode/.maproom/mattermost/maproom.db",
+            "maproom_repo_name": "django/django"
+        },
+        {
+            "name": "mattermost-webapp",
+            "language": "typescript",
+            "size_loc": "~500k",
+            "role": "Bridge: returning codebase for cross-series comparison",
+            "github_url": "https://github.com/mattermost/mattermost-webapp",
+            "local_path": "/workspace/repos/mattermost/mattermost-webapp",
+            "pinned_sha": "c4400573e329eb8c21c79607486f2dfd0d76172d",
+            "maproom_index_path": "sqlite:///home/vscode/.maproom/mattermost/maproom.db",
+            "maproom_repo_name": "mattermost/mattermost-webapp"
+        }
+    ]
+}

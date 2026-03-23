@@ -1,0 +1,16 @@
+{
+  "name": "maproom-skill",
+  "paradigm": "skill-based",
+  "model": "claude-opus-4-20250514",
+  "tools": ["Bash", "Grep", "Glob", "Read"],
+  "mcp_servers": [],
+  "setup_script": "competitors/maproom/setup.sh",
+  "index_script": "competitors/maproom/setup.sh",
+  "system_prompt_file": "competitors/maproom-skill/prompt.md",
+  "performance_budget": {
+    "max_tool_calls": 50,
+    "max_wall_time_seconds": 180,
+    "target_tool_calls": 35,
+    "target_wall_time_seconds": 130
+  }
+}

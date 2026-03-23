@@ -1,0 +1,39 @@
+{
+    "name": "ast-grep",
+    "paradigm": "structural-ast",
+    "model": "haiku",
+    "tools": ["Bash", "Grep", "Glob", "Read"],
+    "mcp_servers": [],
+    "setup_script": "competitors/ast-grep/setup.sh",
+    "index_script": null,
+    "system_prompt_file": "competitors/ast-grep/prompt.md",
+    "performance_budget": {
+        "max_tool_calls": 20,
+        "max_wall_time_seconds": 120,
+        "target_tool_calls": 8,
+        "target_wall_time_seconds": 30
+    },
+    "failure_modes": [
+        {
+            "id": "FM-AG1",
+            "name": "Pattern syntax errors failing silently",
+            "description": "ast-grep may return zero results when the pattern syntax is wrong rather than when the code is genuinely absent. Silent failure makes it impossible to distinguish 'not found' from 'pattern error'.",
+            "severity": "high",
+            "mitigation": "Agent must try at least 2 pattern formulations before concluding absence. If zero results, try a simpler/broader pattern to verify tool is working."
+        },
+        {
+            "id": "FM-AG2",
+            "name": "Limited language grammar support",
+            "description": "ast-grep's tree-sitter grammars may not parse all language constructs correctly, especially decorators, metaprogramming, or less common syntax.",
+            "severity": "medium",
+            "mitigation": "Fall back to Grep/Read if ast-grep produces unexpected results on complex constructs."
+        },
+        {
+            "id": "FM-AG3",
+            "name": "Overly specific patterns reduce recall",
+            "description": "Structural patterns are precise by design. A pattern like 'async def $F($ARGS): $BODY' matches exactly that shape, missing functions with decorators or type annotations that change the tree structure.",
+            "severity": "medium",
+            "mitigation": "Start with broad patterns and narrow down. Use Grep as a coverage safety net."
+        }
+    ]
+}

@@ -1,32 +1,73 @@
 {
   "competitors": [
     {
-      "name": "maproom",
-      "paradigm": "indexed-search",
-      "model": "claude-haiku-4-5-20251001",
-      "tools": ["crewchief-maproom"],
-      "performance_budget": { "max_calls": 100, "max_time_s": 300 }
-    },
-    {
       "name": "explore",
       "paradigm": "iterative-grep",
       "model": "claude-haiku-4-5-20251001",
-      "tools": ["Grep", "Glob", "Read"],
-      "performance_budget": { "max_calls": 150, "max_time_s": 400 }
+      "tools": [
+        "Grep",
+        "Glob",
+        "Read",
+        "Bash"
+      ],
+      "system_prompt": "specs/competitors/explore/prompt.md",
+      "performance_budget": {
+        "max_calls": 80,
+        "max_time_s": 600
+      }
     },
     {
-      "name": "gemini-cli",
-      "paradigm": "gemini-native",
-      "model": "gemini-2.5-pro",
-      "tools": ["search", "read_file", "list_dir"],
-      "performance_budget": { "max_calls": 120, "max_time_s": 350 }
+      "name": "maproom",
+      "paradigm": "indexed-fts",
+      "model": "claude-haiku-4-5-20251001",
+      "tools": [
+        "Bash",
+        "Grep",
+        "Glob",
+        "Read"
+      ],
+      "system_prompt": "specs/competitors/maproom/prompt.md",
+      "setup_script": "specs/competitors/maproom/setup.sh",
+      "performance_budget": {
+        "max_calls": 60,
+        "max_time_s": 600
+      }
     },
     {
-      "name": "aider",
-      "paradigm": "edit-focused",
-      "model": "claude-sonnet-4-20250514",
-      "tools": ["search", "read", "edit"],
-      "performance_budget": { "max_calls": 80, "max_time_s": 250 }
+      "name": "maproom-skill",
+      "paradigm": "skill-based",
+      "model": "claude-opus-4-20250514",
+      "tools": [
+        "Bash",
+        "Grep",
+        "Glob",
+        "Read"
+      ],
+      "system_prompt": "specs/competitors/maproom-skill/prompt.md",
+      "setup_script": "specs/competitors/maproom/setup.sh",
+      "performance_budget": {
+        "max_calls": 50,
+        "max_time_s": 180
+      },
+      "notes": "Opus with minimal 21-line prompt. Tests whether model quality substitutes for prompt engineering."
+    },
+    {
+      "name": "ast-grep",
+      "paradigm": "structural-ast",
+      "model": "claude-haiku-4-5-20251001",
+      "tools": [
+        "Bash",
+        "Grep",
+        "Glob",
+        "Read"
+      ],
+      "system_prompt": "specs/competitors/ast-grep/prompt.md",
+      "setup_script": "specs/competitors/ast-grep/setup.sh",
+      "performance_budget": {
+        "max_calls": 20,
+        "max_time_s": 120
+      },
+      "notes": "AST-based structural pattern matching via ast-grep CLI. Tight tool budget forces precision."
     }
   ]
 }
