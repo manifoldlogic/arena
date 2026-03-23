@@ -1,8 +1,11 @@
 import { Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/hooks/use-theme';
+import { useCompetitionData } from '@/hooks/use-competition-data';
+import { ConnectionStatus } from '@/components/connection-status';
 
 export function Header() {
   const { resolvedTheme, setTheme } = useTheme();
+  const { sseConnected, sseReconnecting } = useCompetitionData();
 
   return (
     <header className="flex h-14 items-center justify-between border-b border-border bg-card px-6">
@@ -17,8 +20,10 @@ export function Header() {
         {/* Competition selector placeholder — wired in Phase 3 */}
         <div id="competition-selector-slot" />
 
-        {/* Connection status placeholder — wired in Phase 2 */}
-        <div id="connection-status-slot" />
+        <ConnectionStatus
+          connected={sseConnected}
+          reconnecting={sseReconnecting}
+        />
 
         <button
           onClick={() =>

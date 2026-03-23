@@ -1,17 +1,20 @@
-import { render, type RenderOptions } from '@testing-library/react';
+import { render, type RenderOptions, type RenderResult } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { ThemeProvider } from '@/providers/theme-provider';
+import { DataProvider } from '@/providers/data-provider';
 import { routes } from '@/routes';
 
 export function renderWithRouter(
   initialEntries: string[] = ['/'],
   options?: Omit<RenderOptions, 'wrapper'>,
-) {
+): RenderResult {
   const router = createMemoryRouter(routes, { initialEntries });
 
   return render(
     <ThemeProvider>
-      <RouterProvider router={router} />
+      <DataProvider>
+        <RouterProvider router={router} />
+      </DataProvider>
     </ThemeProvider>,
     options,
   );
