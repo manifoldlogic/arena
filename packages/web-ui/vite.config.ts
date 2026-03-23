@@ -11,11 +11,6 @@ export default defineConfig({
       '@arena/schemas': path.resolve(__dirname, '../schemas/src'),
     },
   },
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: [],
-  },
   server: {
     port: 5173,
     proxy: {
