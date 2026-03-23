@@ -10,7 +10,7 @@ import unittest
 # Import the module (filename has a hyphen)
 spec = importlib.util.spec_from_file_location(
     "generate_scoreboard",
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), "generate-scoreboard.py"),
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "scripts", "generate-scoreboard.py"),
 )
 generate_scoreboard = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(generate_scoreboard)
@@ -355,7 +355,7 @@ class TestGoldenFile(unittest.TestCase):
 
     def test_golden_file_match(self):
         test_data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                     "..", "test-data")
+                                     "fixtures")
         sample_path = os.path.join(test_data_dir, "sample-rounds.jsonl")
         expected_path = os.path.join(test_data_dir, "expected-scoreboard.md")
 
@@ -487,9 +487,9 @@ class TestEdgeCases(unittest.TestCase):
             with open(rounds_path, "w") as f:
                 f.write(json.dumps(entry) + "\n")
 
-            old_env = os.environ.get("OLYMPICS_DATA_DIR")
+            old_env = os.environ.get("ARENA_DATA_DIR")
             try:
-                os.environ["OLYMPICS_DATA_DIR"] = tmp
+                os.environ["ARENA_DATA_DIR"] = tmp
                 generate_scoreboard.main()
                 scoreboard_path = os.path.join(tmp, "SCOREBOARD.md")
                 self.assertTrue(os.path.exists(scoreboard_path))
@@ -498,9 +498,9 @@ class TestEdgeCases(unittest.TestCase):
                 self.assertIn("# Olympics Scoreboard", content)
             finally:
                 if old_env is None:
-                    os.environ.pop("OLYMPICS_DATA_DIR", None)
+                    os.environ.pop("ARENA_DATA_DIR", None)
                 else:
-                    os.environ["OLYMPICS_DATA_DIR"] = old_env
+                    os.environ["ARENA_DATA_DIR"] = old_env
 
 
 if __name__ == "__main__":

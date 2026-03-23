@@ -1,7 +1,7 @@
 # JSONL Round-Result Schema Definition
 
 **Schema Version:** 1
-**File:** `/workspace/olympics/rounds.jsonl`
+**File:** `data/rounds.jsonl`
 **Format:** One JSON object per line, newline-terminated
 
 This is the authoritative schema contract for all scripts that read or write `rounds.jsonl`. Phase 2 implementers must validate against this specification exactly.

@@ -11,7 +11,7 @@ import pytest
 # Import the module (filename has a hyphen)
 spec = importlib.util.spec_from_file_location(
     "log_round",
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), "log-round.py"),
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "scripts", "log-round.py"),
 )
 log_round = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(log_round)
@@ -59,8 +59,8 @@ def _non_olympics_agent_input(session_id="sess_other456"):
 
 
 def _run_agent(stdin_json, tmp_path):
-    """Run handle_agent_mode with OLYMPICS_DATA_DIR set to tmp_path."""
-    with patch.dict(os.environ, {"OLYMPICS_DATA_DIR": str(tmp_path)}):
+    """Run handle_agent_mode with ARENA_DATA_DIR set to tmp_path."""
+    with patch.dict(os.environ, {"ARENA_DATA_DIR": str(tmp_path)}):
         log_round.handle_agent_mode(stdin_json)
 
 
@@ -82,7 +82,7 @@ class TestSentinelDetection:
     def test_sentinel_absent_exits_zero(self, tmp_path):
         """tool_input without sentinel exits with code 0, zero JSONL lines."""
         stdin_json = _non_olympics_agent_input()
-        with patch.dict(os.environ, {"OLYMPICS_DATA_DIR": str(tmp_path)}):
+        with patch.dict(os.environ, {"ARENA_DATA_DIR": str(tmp_path)}):
             with pytest.raises(SystemExit) as exc_info:
                 log_round.handle_agent_mode(stdin_json)
             assert exc_info.value.code == 0
@@ -96,7 +96,7 @@ class TestSentinelDetection:
             "tool_response": {"tool_calls": 10, "wall_time_seconds": 20.0},
             "session_id": "sess_test",
         }
-        with patch.dict(os.environ, {"OLYMPICS_DATA_DIR": str(tmp_path)}):
+        with patch.dict(os.environ, {"ARENA_DATA_DIR": str(tmp_path)}):
             with pytest.raises(SystemExit) as exc_info:
                 log_round.handle_agent_mode(stdin_json)
             assert exc_info.value.code == 0
@@ -264,7 +264,7 @@ class TestNoScoreboardInvocation:
     def test_subprocess_run_not_called(self, tmp_path):
         """Agent mode must NOT invoke generate-scoreboard.py."""
         stdin_json = _olympics_agent_input()
-        with patch.dict(os.environ, {"OLYMPICS_DATA_DIR": str(tmp_path)}):
+        with patch.dict(os.environ, {"ARENA_DATA_DIR": str(tmp_path)}):
             with patch("subprocess.run") as mock_run:
                 log_round.handle_agent_mode(stdin_json)
                 mock_run.assert_not_called()
@@ -278,7 +278,7 @@ class TestAtomicWrite:
     def test_single_write_call(self, tmp_path):
         """Agent mode should make a single write() call."""
         stdin_json = _olympics_agent_input()
-        with patch.dict(os.environ, {"OLYMPICS_DATA_DIR": str(tmp_path)}):
+        with patch.dict(os.environ, {"ARENA_DATA_DIR": str(tmp_path)}):
             with patch("builtins.open", wraps=open) as mock_open:
                 log_round.handle_agent_mode(stdin_json)
                 # Find the write calls on the file handle
@@ -300,12 +300,12 @@ class TestAtomicWrite:
 
 
 # ---------------------------------------------------------------------------
-# OLYMPICS_DATA_DIR env var test
+# ARENA_DATA_DIR env var test
 # ---------------------------------------------------------------------------
 
 class TestDataDir:
     def test_uses_env_var_for_rounds_path(self, tmp_path):
-        """rounds.jsonl should be written inside the OLYMPICS_DATA_DIR."""
+        """rounds.jsonl should be written inside the ARENA_DATA_DIR."""
         stdin_json = _olympics_agent_input()
         _run_agent(stdin_json, tmp_path)
         rounds_path = os.path.join(str(tmp_path), "rounds.jsonl")

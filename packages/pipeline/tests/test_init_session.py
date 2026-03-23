@@ -9,14 +9,14 @@ from io import StringIO
 from unittest.mock import patch
 
 # Add scripts dir to path so we can import the module
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "scripts"))
 
 # Import the module by loading it as a module (filename has a hyphen)
 import importlib.util
 
 spec = importlib.util.spec_from_file_location(
     "init_session",
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), "init-session.py"),
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "scripts", "init-session.py"),
 )
 init_session = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(init_session)
@@ -70,7 +70,7 @@ class TestMainFunction(unittest.TestCase):
     def setUp(self):
         """Create a temp directory for each test."""
         self.tmpdir = tempfile.mkdtemp()
-        self.env_patcher = patch.dict(os.environ, {"OLYMPICS_DATA_DIR": self.tmpdir})
+        self.env_patcher = patch.dict(os.environ, {"ARENA_DATA_DIR": self.tmpdir})
         self.env_patcher.start()
 
     def tearDown(self):
@@ -257,7 +257,7 @@ class TestMalformedInput(unittest.TestCase):
 
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp()
-        self.env_patcher = patch.dict(os.environ, {"OLYMPICS_DATA_DIR": self.tmpdir})
+        self.env_patcher = patch.dict(os.environ, {"ARENA_DATA_DIR": self.tmpdir})
         self.env_patcher.start()
 
     def tearDown(self):
@@ -299,17 +299,17 @@ class TestGetDataDir(unittest.TestCase):
     def test_uses_env_var(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             target = os.path.join(tmpdir, "subdir")
-            with patch.dict(os.environ, {"OLYMPICS_DATA_DIR": target}):
+            with patch.dict(os.environ, {"ARENA_DATA_DIR": target}):
                 result = init_session.get_data_dir()
                 self.assertEqual(result, target)
                 self.assertTrue(os.path.isdir(target))
 
     def test_default_when_no_env(self):
         with patch.dict(os.environ, {}, clear=False):
-            if "OLYMPICS_DATA_DIR" in os.environ:
-                del os.environ["OLYMPICS_DATA_DIR"]
+            if "ARENA_DATA_DIR" in os.environ:
+                del os.environ["ARENA_DATA_DIR"]
             result = init_session.get_data_dir()
-            self.assertEqual(result, "/workspace/olympics")
+            self.assertTrue(result.endswith(os.sep + "data"), "Expected default path to end with /data, got: {}".format(result))
 
 
 class TestReadExistingSession(unittest.TestCase):

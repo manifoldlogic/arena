@@ -11,7 +11,7 @@ import pytest
 # Import the module (filename has a hyphen)
 spec = importlib.util.spec_from_file_location(
     "log_round",
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), "log-round.py"),
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "scripts", "log-round.py"),
 )
 log_round = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(log_round)
@@ -132,7 +132,7 @@ def _read_jsonl(path):
 
 
 def _run_score(stdin_json, tmp_path):
-    """Run handle_score_mode with OLYMPICS_DATA_DIR set to tmp_path."""
+    """Run handle_score_mode with ARENA_DATA_DIR set to tmp_path."""
     # Create scripts dir and stub generate-scoreboard.py
     scripts_dir = os.path.join(str(tmp_path), "scripts")
     os.makedirs(scripts_dir, exist_ok=True)
@@ -140,7 +140,7 @@ def _run_score(stdin_json, tmp_path):
     with open(stub_path, "w") as f:
         f.write("pass\n")
 
-    with patch.dict(os.environ, {"OLYMPICS_DATA_DIR": str(tmp_path)}):
+    with patch.dict(os.environ, {"ARENA_DATA_DIR": str(tmp_path)}):
         with patch("subprocess.run") as mock_run:
             log_round.handle_score_mode(stdin_json)
             return mock_run
@@ -162,7 +162,7 @@ class TestPathFilter:
             "/workspace/repos/mattermost/foo.json",
             {"some": "data"},
         )
-        with patch.dict(os.environ, {"OLYMPICS_DATA_DIR": str(tmp_path)}):
+        with patch.dict(os.environ, {"ARENA_DATA_DIR": str(tmp_path)}):
             with pytest.raises(SystemExit) as exc_info:
                 log_round.handle_score_mode(stdin_json)
             assert exc_info.value.code == 0
@@ -174,7 +174,7 @@ class TestPathFilter:
             "/workspace/olympics-v2/results/scored/django/R01.txt",
             {"some": "data"},
         )
-        with patch.dict(os.environ, {"OLYMPICS_DATA_DIR": str(tmp_path)}):
+        with patch.dict(os.environ, {"ARENA_DATA_DIR": str(tmp_path)}):
             with pytest.raises(SystemExit) as exc_info:
                 log_round.handle_score_mode(stdin_json)
             assert exc_info.value.code == 0
@@ -184,7 +184,7 @@ class TestPathFilter:
             "/workspace/olympics-v2/results/scored/R01.json",
             {"some": "data"},
         )
-        with patch.dict(os.environ, {"OLYMPICS_DATA_DIR": str(tmp_path)}):
+        with patch.dict(os.environ, {"ARENA_DATA_DIR": str(tmp_path)}):
             with pytest.raises(SystemExit) as exc_info:
                 log_round.handle_score_mode(stdin_json)
             assert exc_info.value.code == 0
@@ -545,7 +545,7 @@ class TestAtomicWrite:
 
 
 # ---------------------------------------------------------------------------
-# OLYMPICS_DATA_DIR env var test
+# ARENA_DATA_DIR env var test
 # ---------------------------------------------------------------------------
 
 class TestDataDir:
@@ -618,7 +618,7 @@ class TestAgentMode:
             "session_id": "sess_test",
         }
         with patch("sys.argv", ["log-round.py", "--mode=agent"]):
-            with patch.dict(os.environ, {"OLYMPICS_DATA_DIR": str(tmp_path)}):
+            with patch.dict(os.environ, {"ARENA_DATA_DIR": str(tmp_path)}):
                 with pytest.raises(SystemExit) as exc_info:
                     log_round.main(stdin_input=stdin_json)
                 # Non-Olympics input exits 0 via handle_agent_mode

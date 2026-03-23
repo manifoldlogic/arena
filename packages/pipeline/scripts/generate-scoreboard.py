@@ -15,8 +15,12 @@ from collections import defaultdict
 
 
 def get_data_dir():
-    """Return the Olympics data directory."""
-    return os.environ.get("OLYMPICS_DATA_DIR", "/workspace/olympics")
+    """Return the Arena data directory."""
+    if "ARENA_DATA_DIR" in os.environ:
+        return os.environ["ARENA_DATA_DIR"]
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    repo_root = os.path.dirname(os.path.dirname(os.path.dirname(script_dir)))
+    return os.path.join(repo_root, "data")
 
 
 def load_rounds(data_dir):
