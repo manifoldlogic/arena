@@ -12,7 +12,7 @@ import type {
   RadarSeries,
   CategoryMatrixRow,
 } from '@/lib/round-transforms';
-import { MOCK_ROUNDS } from '@/data/mock-rounds';
+import { useCompetitionData } from '@/hooks/use-competition-data';
 
 export interface UseHeadToHeadResult {
   competitorA: string;
@@ -31,11 +31,12 @@ export interface UseHeadToHeadResult {
  */
 export function useHeadToHead(): UseHeadToHeadResult {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { rounds } = useCompetitionData();
 
   const competitors = useMemo(() => {
-    const set = new Set(MOCK_ROUNDS.map((r) => r.competitor));
+    const set = new Set(rounds.map((r) => r.competitor));
     return [...set].sort();
-  }, []);
+  }, [rounds]);
 
   const competitorA = searchParams.get('a') ?? competitors[0] ?? '';
   const competitorB = searchParams.get('b') ?? competitors[1] ?? '';
@@ -53,12 +54,12 @@ export function useHeadToHead(): UseHeadToHeadResult {
   );
 
   const averages = useMemo(
-    () => computeH2HAverages(MOCK_ROUNDS, competitorA, competitorB),
+    () => computeH2HAverages(rounds, competitorA, competitorB),
     [competitorA, competitorB],
   );
 
   const margins = useMemo(
-    () => computeMargins(MOCK_ROUNDS, competitorA, competitorB),
+    () => computeMargins(rounds, competitorA, competitorB),
     [competitorA, competitorB],
   );
 
@@ -102,7 +103,7 @@ export function useHeadToHead(): UseHeadToHeadResult {
   }, [averages, competitorA, competitorB]);
 
   const categoryMatrix = useMemo(
-    () => computeCategoryMatrix(MOCK_ROUNDS, competitorA, competitorB),
+    () => computeCategoryMatrix(rounds, competitorA, competitorB),
     [competitorA, competitorB],
   );
 

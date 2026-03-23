@@ -3,10 +3,11 @@ import { groupRoundsByRoundId } from '@/lib/round-transforms';
 import { useRoundFilters } from '@/hooks/useRoundFilters';
 import { RoundListTable } from '@/components/rounds/RoundListTable';
 import { RoundFilters } from '@/components/rounds/RoundFilters';
-import { MOCK_ROUNDS } from '@/data/mock-rounds';
+import { useCompetitionData } from '@/hooks/use-competition-data';
 
 export function RoundsPage() {
-  const allGroups = useMemo(() => groupRoundsByRoundId(MOCK_ROUNDS), []);
+  const { rounds } = useCompetitionData();
+  const allGroups = useMemo(() => groupRoundsByRoundId(rounds), [rounds]);
   const filtersState = useRoundFilters();
   const filteredGroups = useMemo(
     () => filtersState.applyFilters(allGroups),

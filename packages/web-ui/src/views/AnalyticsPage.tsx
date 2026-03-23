@@ -2,7 +2,7 @@
  * Analytics page — composes all 6 analytical views with mock data.
  */
 import { useMemo, useState } from 'react';
-import { useCompetitionData } from '@/hooks/useCompetitionData';
+import { useCompetitionData } from '@/hooks/use-competition-data';
 import {
   computeDivergenceMatrix,
   computeDriftTimeline,
@@ -18,8 +18,12 @@ import { CategoryHeatmap } from '@/components/charts/CategoryHeatmap';
 import { CrossSeriesFacets } from '@/components/charts/CrossSeriesFacets';
 
 export function AnalyticsPage() {
-  const { rounds, competitors } = useCompetitionData();
+  const { rounds } = useCompetitionData();
   const [windowSize, setWindowSize] = useState(3);
+  const competitors = useMemo(
+    () => [...new Set(rounds.map((r) => r.competitor))].sort(),
+    [rounds],
+  );
 
   const divergence = useMemo(() => computeDivergenceMatrix(rounds), [rounds]);
   const drift = useMemo(
