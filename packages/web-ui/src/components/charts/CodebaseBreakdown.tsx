@@ -82,6 +82,7 @@ export function CodebaseBreakdown({ data, competitors, colorMap, stacked = false
               fill={colors[c]}
               stackId={stacked ? 'stack' : undefined}
               radius={stacked ? undefined : [4, 4, 0, 0]}
+              style={{ cursor: 'pointer' }}
             />
           ))}
         </BarChart>

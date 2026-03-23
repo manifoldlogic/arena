@@ -1,4 +1,4 @@
-import { createContext, useCallback, useEffect, useMemo, useReducer } from 'react';
+import { createContext, useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 import type { RoundResult, CompetitorStanding, CompetitionStatus } from '@arena/schemas';
 import { useSSE } from '@/hooks/use-sse';
 import type { CompetitionData } from '@/types/api';
@@ -6,6 +6,8 @@ import type { CompetitionData } from '@/types/api';
 export interface DataContextValue extends CompetitionData {
   sseConnected: boolean;
   sseReconnecting: boolean;
+  /** Incremented each time an SSE event is received */
+  sseEventCount: number;
 }
 
 export const DataContext = createContext<DataContextValue | null>(null);
@@ -94,13 +96,18 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     fetchData();
   }, [fetchData]);
 
+  // SSE event counter for UI pulse effects
+  const [sseEventCount, setSseEventCount] = useState(0);
+
   // SSE integration — merges live updates into state
   const handleRoundUpdate = useCallback((round: RoundResult) => {
     dispatch({ type: 'UPDATE_ROUND', round });
+    setSseEventCount((c) => c + 1);
   }, []);
 
   const handleStandingsUpdate = useCallback((standings: CompetitorStanding[]) => {
     dispatch({ type: 'UPDATE_STANDINGS', standings });
+    setSseEventCount((c) => c + 1);
   }, []);
 
   const { connected: sseConnected, reconnecting: sseReconnecting } = useSSE({
@@ -116,8 +123,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       refetch: fetchData,
       sseConnected,
       sseReconnecting,
+      sseEventCount,
     }),
-    [state, fetchData, sseConnected, sseReconnecting],
+    [state, fetchData, sseConnected, sseReconnecting, sseEventCount],
   );
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

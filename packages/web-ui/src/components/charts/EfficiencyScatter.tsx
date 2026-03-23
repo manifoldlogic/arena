@@ -67,6 +67,10 @@ export function EfficiencyScatter({ data, competitors, colorMap, className }: Pr
     });
 
     containerRef.current.replaceChildren(plot);
+    // Add cursor:pointer to all interactive dot elements
+    plot.querySelectorAll('circle').forEach((el: SVGCircleElement) => {
+      el.style.cursor = 'pointer';
+    });
     return () => plot.remove();
   }, [data, domain, range]);
 

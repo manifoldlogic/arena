@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import type { CompetitorStanding } from '@arena/schemas';
 import type { StreakInfo } from '@/lib/transforms';
 import { cn } from '@/lib/utils';
@@ -12,6 +13,14 @@ interface Props {
   className?: string;
 }
 
+/** Compute rank map (1-indexed) from sorted standings by total desc */
+function buildRankMap(standings: CompetitorStanding[]): Map<string, number> {
+  const sorted = [...standings].sort((a, b) => b.total - a.total || b.avg - a.avg);
+  const map = new Map<string, number>();
+  sorted.forEach((s, i) => map.set(s.competitor, i + 1));
+  return map;
+}
+
 export function StandingsTable({ standings, streaks, className }: Props) {
   const streakMap = useMemo(() => {
     if (!streaks) return null;
@@ -22,6 +31,30 @@ export function StandingsTable({ standings, streaks, className }: Props) {
   const hasQAS = standings.some((s) => s.qas != null);
   const [sortKey, setSortKey] = useState<SortKey>('total');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
+
+  // Track rank changes across data updates
+  const prevRankMap = useRef<Map<string, number>>(new Map());
+  const currentRankMap = useMemo(() => buildRankMap(standings), [standings]);
+  const rankDelta = useMemo(() => {
+    const delta = new Map<string, number>();
+    if (prevRankMap.current.size > 0) {
+      for (const [competitor, currentRank] of currentRankMap) {
+        const prevRank = prevRankMap.current.get(competitor);
+        if (prevRank != null && prevRank !== currentRank) {
+          // Positive = moved up (lower rank number), negative = moved down
+          delta.set(competitor, prevRank - currentRank);
+        }
+      }
+    }
+    return delta;
+  }, [currentRankMap]);
+
+  // Update prev rank map after render
+  const [dataVersion, setDataVersion] = useState(0);
+  useEffect(() => {
+    prevRankMap.current = currentRankMap;
+    setDataVersion((v) => v + 1);
+  }, [currentRankMap]);
 
   const sorted = useMemo(() => {
     const copy = [...standings];
@@ -94,34 +127,70 @@ export function StandingsTable({ standings, streaks, className }: Props) {
           </tr>
         </thead>
         <tbody>
-          {sorted.map((s, i) => (
-            <tr
-              key={s.competitor}
-              className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
-            >
-              <td className="px-3 py-2 text-muted-foreground">{i + 1}</td>
-              <td className="px-3 py-2 font-medium">{s.competitor}</td>
-              <td className="px-3 py-2 text-right font-mono font-semibold">{s.total}</td>
-              {hasQAS && (
-                <td className="px-3 py-2 text-right font-mono font-semibold text-blue-600 dark:text-blue-400">
-                  {s.qas?.toFixed(2) ?? '—'}
+          {sorted.map((s, i) => {
+            const delta = rankDelta.get(s.competitor);
+            return (
+              <motion.tr
+                key={s.competitor}
+                className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
+                initial={false}
+                animate={{
+                  backgroundColor: [
+                    'hsl(var(--accent) / 0.35)',
+                    'hsl(var(--accent) / 0)',
+                  ],
+                }}
+                transition={{ duration: 1.5, ease: 'easeOut' }}
+              >
+                <td className="px-3 py-2 text-muted-foreground">
+                  <span className="inline-flex items-center gap-1">
+                    {i + 1}
+                    {delta != null && <RankChangeBadge delta={delta} />}
+                  </span>
                 </td>
-              )}
-              <td className="px-3 py-2 text-right font-mono">{s.avg.toFixed(2)}</td>
-              <td className="px-3 py-2 text-right font-mono">{s.wins}</td>
-              <td className="px-3 py-2 text-right font-mono">{s.ties}</td>
-              <td className="px-3 py-2 text-right font-mono">{s.losses}</td>
-              <td className="px-3 py-2 text-right font-mono">{s.rounds}</td>
-              {streakMap && (
-                <td className="px-3 py-2 text-center">
-                  <StreakBadge streak={streakMap.get(s.competitor)} />
-                </td>
-              )}
-            </tr>
-          ))}
+                <td className="px-3 py-2 font-medium">{s.competitor}</td>
+                <td className="px-3 py-2 text-right font-mono font-semibold">{s.total}</td>
+                {hasQAS && (
+                  <td className="px-3 py-2 text-right font-mono font-semibold text-blue-600 dark:text-blue-400">
+                    {s.qas?.toFixed(2) ?? '—'}
+                  </td>
+                )}
+                <td className="px-3 py-2 text-right font-mono">{s.avg.toFixed(2)}</td>
+                <td className="px-3 py-2 text-right font-mono">{s.wins}</td>
+                <td className="px-3 py-2 text-right font-mono">{s.ties}</td>
+                <td className="px-3 py-2 text-right font-mono">{s.losses}</td>
+                <td className="px-3 py-2 text-right font-mono">{s.rounds}</td>
+                {streakMap && (
+                  <td className="px-3 py-2 text-center">
+                    <StreakBadge streak={streakMap.get(s.competitor)} />
+                  </td>
+                )}
+              </motion.tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
+  );
+}
+
+function RankChangeBadge({ delta }: { delta: number }) {
+  if (delta === 0) return null;
+  const up = delta > 0;
+  return (
+    <motion.span
+      initial={{ opacity: 0, scale: 0.5 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0 }}
+      className={cn(
+        'inline-flex items-center rounded px-1 text-[10px] font-bold leading-tight',
+        up
+          ? 'text-emerald-600 dark:text-emerald-400'
+          : 'text-red-600 dark:text-red-400',
+      )}
+    >
+      {up ? `\u25B2${delta}` : `\u25BC${Math.abs(delta)}`}
+    </motion.span>
   );
 }
 
