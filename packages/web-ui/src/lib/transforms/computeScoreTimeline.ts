@@ -2,17 +2,26 @@ import type { RoundResult } from '@arena/schemas';
 
 export interface TimelinePoint {
   round_id: string;
-  [competitor: string]: number | string;
+  [competitor: string]: number | string | undefined;
 }
 
+export type TimelineMode = 'cumulative' | 'avg';
+
 /**
- * Compute cumulative score timeline for each competitor over rounds.
+ * Compute score timeline for each competitor over rounds.
+ *
+ * Modes:
+ * - 'cumulative': Running total (original behavior). If a competitor has no
+ *   result for a round, their cumulative score carries forward.
+ * - 'avg': Rolling average (total / rounds played so far). Only includes
+ *   data points where the competitor actually participated (no interpolation).
  *
  * Rounds are sorted by timestamp (falling back to round_id).
- * If a competitor has no result for a round, their cumulative score
- * carries forward (flat segment, no gap).
  */
-export function computeScoreTimeline(rounds: RoundResult[]): TimelinePoint[] {
+export function computeScoreTimeline(
+  rounds: RoundResult[],
+  mode: TimelineMode = 'avg',
+): TimelinePoint[] {
   // 1. Filter to scored, non-calibration
   const scored = rounds.filter(
     (r) => r.source === 'score' && !r.is_calibration,
@@ -49,25 +58,37 @@ export function computeScoreTimeline(rounds: RoundResult[]): TimelinePoint[] {
     scoreMap.set(`${r.round_id}:${r.competitor}`, r.total ?? 0);
   }
 
-  // 6. Build cumulative timeline
+  // 6. Build timeline based on mode
   const cumulative: Record<string, number> = {};
+  const roundCount: Record<string, number> = {};
   for (const c of competitors) {
     cumulative[c] = 0;
+    roundCount[c] = 0;
   }
 
   const timeline: TimelinePoint[] = [];
   for (const roundId of sortedRoundIds) {
+    const point: TimelinePoint = { round_id: roundId };
+
     for (const c of competitors) {
       const score = scoreMap.get(`${roundId}:${c}`);
       if (score !== undefined) {
         cumulative[c] += score;
+        roundCount[c] += 1;
       }
-      // If no score for this round, cumulative carries forward
+
+      if (mode === 'cumulative') {
+        // Cumulative: carry forward even if no result this round
+        point[c] = cumulative[c];
+      } else {
+        // Avg: only show data points where competitor participated
+        if (score !== undefined) {
+          point[c] = Math.round((cumulative[c] / roundCount[c]) * 100) / 100;
+        }
+        // If no score for this round, leave undefined (gap in line)
+      }
     }
-    const point: TimelinePoint = { round_id: roundId };
-    for (const c of competitors) {
-      point[c] = cumulative[c];
-    }
+
     timeline.push(point);
   }
 

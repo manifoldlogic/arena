@@ -9,6 +9,7 @@ import {
   computeEfficiencyScatter,
   computeStreaks,
 } from '@/lib/transforms';
+import type { TimelineMode } from '@/lib/transforms';
 import {
   StandingsTable,
   ScoreTimeline,
@@ -22,16 +23,17 @@ import { maxCallsMap } from '@/lib/maxCalls';
 
 type BreakdownMode = 'codebase' | 'query_category';
 type ScoreMode = 'raw' | 'qas';
+type ChartMode = TimelineMode;
 
 function LeaderSummary({ standings }: { standings: CompetitorStanding[] }) {
   if (standings.length < 2) return null;
 
   const leader = standings[0];
   const second = standings[1];
-  const gap = leader.total - second.total;
-  const maxScore = leader.total;
-  const leaderPct = maxScore > 0 ? 100 : 0;
-  const secondPct = maxScore > 0 ? (second.total / maxScore) * 100 : 0;
+  const gap = (leader.avg - second.avg).toFixed(2);
+  const maxAvg = leader.avg;
+  const leaderPct = maxAvg > 0 ? 100 : 0;
+  const secondPct = maxAvg > 0 ? (second.avg / maxAvg) * 100 : 0;
 
   return (
     <div className="rounded-lg border border-border bg-card p-6">
@@ -39,7 +41,7 @@ function LeaderSummary({ standings }: { standings: CompetitorStanding[] }) {
         <span className="text-3xl font-bold tracking-tight text-foreground">
           {leader.competitor}
         </span>
-        <span className="text-sm font-medium text-muted-foreground">leads by {gap} pts</span>
+        <span className="text-sm font-medium text-muted-foreground">leads by {gap} avg pts/round</span>
       </div>
 
       <div className="mt-4 space-y-2">
@@ -52,7 +54,7 @@ function LeaderSummary({ standings }: { standings: CompetitorStanding[] }) {
               style={{ width: `${leaderPct}%` }}
             />
           </div>
-          <span className="w-14 text-right font-mono text-sm font-semibold">{leader.total}</span>
+          <span className="w-14 text-right font-mono text-sm font-semibold">{leader.avg.toFixed(1)}</span>
         </div>
 
         {/* 2nd place bar */}
@@ -67,7 +69,7 @@ function LeaderSummary({ standings }: { standings: CompetitorStanding[] }) {
             />
           </div>
           <span className="w-14 text-right font-mono text-sm text-muted-foreground">
-            {second.total}
+            {second.avg.toFixed(1)}
           </span>
         </div>
       </div>
@@ -78,6 +80,7 @@ function LeaderSummary({ standings }: { standings: CompetitorStanding[] }) {
 export function StandingsView() {
   const [breakdownMode, setBreakdownMode] = useState<BreakdownMode>('codebase');
   const [scoreMode, setScoreMode] = useState<ScoreMode>('raw');
+  const [timelineMode, setTimelineMode] = useState<ChartMode>('avg');
 
   const { rounds: liveRounds } = useCompetitionData();
   const rounds = liveRounds;
@@ -87,7 +90,7 @@ export function StandingsView() {
     [rounds, scoreMode],
   );
   const competitors = useMemo(() => standings.map((s) => s.competitor), [standings]);
-  const timeline = useMemo(() => computeScoreTimeline(rounds), [rounds]);
+  const timeline = useMemo(() => computeScoreTimeline(rounds, timelineMode), [rounds, timelineMode]);
   const breakdown = useMemo(
     () => computeCodebaseBreakdown(rounds, breakdownMode),
     [rounds, breakdownMode],
@@ -95,6 +98,12 @@ export function StandingsView() {
   const winTieLoss = useMemo(() => computeWinTieLoss(standings), [standings]);
   const scatter = useMemo(() => computeEfficiencyScatter(rounds), [rounds]);
   const streaks = useMemo(() => computeStreaks(rounds), [rounds]);
+
+  // Total unique rounds for "X/N" display
+  const totalRounds = useMemo(() => {
+    const scored = rounds.filter((r) => r.source === 'score' && !r.is_calibration);
+    return new Set(scored.map((r) => r.round_id)).size;
+  }, [rounds]);
 
   // Build color map from CSS variables (falls back to static colors in SSR)
   const colorMap = useMemo(() => {
@@ -146,16 +155,41 @@ export function StandingsView() {
             </button>
           </div>
         </div>
-        <StandingsTable standings={standings} streaks={streaks} />
+        <StandingsTable standings={standings} streaks={streaks} totalRounds={totalRounds} />
       </section>
 
       {/* Score Timeline */}
       <section>
-        <h2 className="mb-3 text-lg font-semibold">Score Progression</h2>
+        <div className="mb-3 flex items-center gap-3">
+          <h2 className="text-lg font-semibold">Score Progression</h2>
+          <div className="flex rounded-md border border-border text-sm">
+            <button
+              className={`px-3 py-1 transition-colors ${
+                timelineMode === 'avg'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'hover:bg-muted'
+              }`}
+              onClick={() => setTimelineMode('avg')}
+            >
+              Per-Round Avg
+            </button>
+            <button
+              className={`px-3 py-1 transition-colors ${
+                timelineMode === 'cumulative'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'hover:bg-muted'
+              }`}
+              onClick={() => setTimelineMode('cumulative')}
+            >
+              Cumulative
+            </button>
+          </div>
+        </div>
         <ScoreTimeline
           data={timeline}
           competitors={competitors}
           colorMap={colorMap}
+          mode={timelineMode}
         />
       </section>
 
