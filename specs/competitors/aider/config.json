@@ -1,0 +1,20 @@
+{
+  "name": "aider",
+  "harness_type": "aider",
+  "version": "0.86.2",
+  "model": "claude-sonnet-4-20250514",
+  "edit_format": "diff",
+  "invocation_template": "scripts/harness/aider-runner.sh --message-file {message_file} --codebase-dir {codebase_dir} --output-dir {output_dir} --timeout {timeout} --model {model} --edit-format diff",
+  "performance_budget": {
+    "max_time_s": 600,
+    "max_calls": null
+  },
+  "environment_variables": ["ANTHROPIC_API_KEY"],
+  "known_limitations": [
+    "--yes-always flag auto-confirms shell commands without sandboxing, which is a security concern for automated runs (aider issue #3903)",
+    "No structured tool call count metric; llm_turns parsed from aider's text-based LLM history log is used as a proxy",
+    "LLM interaction history is text-based (not structured JSON), requiring regex parsing to extract turn counts and token usage",
+    "DISC-01 schema field mapping: aider's llm_turns maps to the rounds.jsonl 'calls' field as an approximation, not a direct equivalent"
+  ],
+  "notes": "Discovery-only config. Not integrated into main competitors.json. See ARENA-HARN for permanent integration."
+}
