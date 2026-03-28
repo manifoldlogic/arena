@@ -61,6 +61,10 @@ This asymmetry means the four candidates were validated through different pipeli
 
 This evaluation is considered current for 12 months from collection date (2026-03-28) or until Multi-SWE-bench releases a major Go dataset update, whichever comes first.
 
+### DevContainer Baseline
+
+All four Go candidates share a common baseline: the Go toolchain is pre-installed via `ghcr.io/devcontainers/features/go:1` with `"version": "latest"` in the Arena devcontainer. No candidate requires protoc or other code generators at test time -- all generated files (`.pb.go`, `.y.go`) are committed to their respective repositories. Per-repo DevContainer sections below document only repository-specific requirements beyond this baseline.
+
 ---
 
 ## Candidate Evaluations
@@ -125,7 +129,7 @@ This evaluation is considered current for 12 months from collection date (2026-0
 
 #### DevContainer Compatibility
 
-- **Go toolchain:** Pre-installed via `ghcr.io/devcontainers/features/go:1` in the Arena devcontainer
+- **Go toolchain:** See DevContainer Baseline in Methodology.
 - **Build tags required:** `GOFLAGS='-tags=nobadger,nomysql,nopgx'` must be set to exclude optional storage backend tests (MySQL, PostgreSQL, Badger)
 - **CGO:** Not required for core functionality; CI sets `CGO_ENABLED=0` explicitly
 - **Network independence:** Integration tests in `caddytest/` use pre-generated localhost TLS certificates and bind to localhost; no external network access required
@@ -192,7 +196,7 @@ This evaluation is considered current for 12 months from collection date (2026-0
 
 #### DevContainer Compatibility
 
-- **Go toolchain:** Pre-installed via `ghcr.io/devcontainers/features/go:1` in the Arena devcontainer. Standard `go test ./...` works.
+- **Go toolchain:** See DevContainer Baseline in Methodology. Standard `go test ./...` works.
 - **Network independence:** Dedicated `pkg/httpmock/` package and 20+ mock files ensure unit tests run without network access. GitHub API is mocked at the HTTP transport level.
 - **Acceptance tests:** Separate suite (requires `acceptance` build tag) may need actual GitHub API access; isolated from unit tests and not triggered by `go test ./...`.
 - **No protobuf dependency:** Some `.proto.mock.go` files for codespace RPC are pre-generated mocks, not requiring `protoc` at test time.
@@ -265,7 +269,7 @@ This evaluation is considered current for 12 months from collection date (2026-0
 
 #### DevContainer Compatibility
 
-- **Go toolchain:** Pre-installed via `ghcr.io/devcontainers/features/go:1` in the Arena devcontainer. Standard `go test ./...` should work for core Go tests.
+- **Go toolchain:** See DevContainer Baseline in Methodology. Standard `go test ./...` should work for core Go tests.
 - **GO_ONLY mode:** Use `make GO_ONLY=1` or run `go test ./...` directly to skip UI/Node.js build steps.
 - **protoc:** Required only for code regeneration (`make protoc && make proto`), not for running tests. Generated `.pb.go` files are committed.
 - **goyacc:** Required only for regenerating the PromQL parser, not for running tests. Generated parser file is committed.
@@ -334,9 +338,8 @@ This evaluation is considered current for 12 months from collection date (2026-0
 
 #### DevContainer Compatibility
 
-- **Go toolchain:** Pre-installed via `ghcr.io/devcontainers/features/go:1` in the Arena devcontainer. Standard `go test google.golang.org/grpc/...` works.
-- **protoc (protobuf compiler):** Required only for code generation (`make proto`), NOT for running tests. The 48 generated `.pb.go` files and 13 `.proto` source files are committed to the repository.
-- **protoc installation if needed:** Available via `apt install protobuf-compiler` or direct download. Go plugins (`protoc-gen-go`, `protoc-gen-go-grpc`) installable via `go install`. Only needed if a benchmark task involves modifying `.proto` files (unlikely given only 16 validated instances).
+- **Go toolchain:** See DevContainer Baseline in Methodology. Standard `go test google.golang.org/grpc/...` works.
+- **protoc (protobuf compiler):** Available in the devcontainer if needed but not required for running the test suite. The 48 generated `.pb.go` files and 13 `.proto` source files are committed to the repository.
 - **Network independence:** Tests use `bufconn` (in-process gRPC connections) for end-to-end tests, avoiding real network sockets. Core tests should run without external network access.
 - **Sub-module tests:** `security/advancedtls` and `security/authorization` have their own `go.mod` files and may need separate `go test` invocations.
 - **Verdict:** Tests should run in the Arena devcontainer without `protoc`. The main concern is codebase domain complexity rather than tooling barriers.
@@ -365,6 +368,8 @@ cli/cli is the clear frontrunner among all Go benchmark candidates. With 397 val
 
 **Primary limitation:** 397 instances falls in the Adequate range (below the 500 Strong threshold), but no other Go repository comes close to this count.
 
+> **Note:** cli/cli accounts for 92.8% of all Go instances in Multi-SWE-bench (397/428). Arena's Go benchmark program has a single-point-of-failure dependency on this repository remaining in the dataset.
+
 ### 2. grpc/grpc-go
 
 grpc-go ranks second based on its presence in Multi-SWE-bench and strong infrastructure metrics. It has Strong ratings on CI Reproducibility, Issue History Depth, Codebase Complexity, and Community Health. The Google/CNCF backing, 11 years of history, and 428 contributors provide a robust foundation. CI requires only standard `go test` -- protoc is not needed for running tests.
@@ -385,7 +390,7 @@ Prometheus ranks fourth with the smallest validated task inventory of all four c
 
 ---
 
-## Notes
+## Appendix
 
 ### Format Precedent
 
@@ -393,7 +398,7 @@ Neither BENCH-01 (`specs/benchmarks/rust-evaluation.md`) nor BENCH-03 (`specs/be
 
 ### DevContainer Toolchain
 
-All four Go candidates benefit from the Arena devcontainer's Go installation via `ghcr.io/devcontainers/features/go:1` with `"version": "latest"`. No candidate requires protoc or other code generators at test time -- all generated files (`.pb.go`, `.y.go`) are committed to their respective repositories. The only per-repo configuration needed:
+The shared Go toolchain baseline is documented in the DevContainer Baseline subsection of Methodology. The only per-repo configuration needed beyond the baseline:
 
 - **caddy:** Set `GOFLAGS='-tags=nobadger,nomysql,nopgx'` to exclude optional storage backend tests.
 - **prometheus:** Use `make GO_ONLY=1` or run `go test ./...` directly to skip the React UI build. Be aware of potential timing-sensitive test flakiness.
