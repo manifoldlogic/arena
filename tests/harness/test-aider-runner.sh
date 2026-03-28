@@ -401,6 +401,281 @@ assert_valid_json "metadata.json is valid JSON after timeout" "$FAKE_OUTPUT/meta
 assert_json_field "exit_code is 124 after timeout" "$FAKE_OUTPUT/metadata.json" ".exit_code" "124"
 assert_json_field "exit_reason is timeout" "$FAKE_OUTPUT/metadata.json" ".exit_reason" "timeout"
 
+printf "\n-- All 5 output artifacts (happy path) --\n"
+
+# Run a fresh invocation and check all 5 artifacts exist
+rm -rf "$FAKE_OUTPUT"
+GIT_CODEBASE="$TEST_TMPDIR/git-codebase"
+mkdir -p "$GIT_CODEBASE"
+(cd "$GIT_CODEBASE" && git init -q && git config user.email "test@test.com" && git config user.name "Test" && printf "initial\n" > file.txt && git add file.txt && git commit -q -m "init")
+
+env AIDER_BIN="$MOCK_AIDER" \
+    sh "$RUNNER" \
+    --codebase-dir "$GIT_CODEBASE" --output-dir "$FAKE_OUTPUT" \
+    --message "hello" --timeout 60 --model gpt-4 \
+    >/dev/null 2>&1 || true
+
+assert_file_exists "artifact: stdout.log" "$FAKE_OUTPUT/stdout.log"
+assert_file_exists "artifact: stderr.log" "$FAKE_OUTPUT/stderr.log"
+assert_file_exists "artifact: llm-history.txt" "$FAKE_OUTPUT/llm-history.txt"
+assert_file_exists "artifact: changes.diff" "$FAKE_OUTPUT/changes.diff"
+assert_file_exists "artifact: metadata.json" "$FAKE_OUTPUT/metadata.json"
+
+printf "\n-- changes.diff: empty when no file changes --\n"
+
+# In a git repo with no modifications, changes.diff should be empty but present
+rm -rf "$FAKE_OUTPUT"
+CLEAN_GIT="$TEST_TMPDIR/clean-git"
+mkdir -p "$CLEAN_GIT"
+(cd "$CLEAN_GIT" && git init -q && git config user.email "test@test.com" && git config user.name "Test" && printf "clean\n" > file.txt && git add file.txt && git commit -q -m "init")
+
+env AIDER_BIN="$MOCK_AIDER" \
+    sh "$RUNNER" \
+    --codebase-dir "$CLEAN_GIT" --output-dir "$FAKE_OUTPUT" \
+    --message "hello" --timeout 60 --model gpt-4 \
+    >/dev/null 2>&1 || true
+
+assert_file_exists "changes.diff exists (no changes)" "$FAKE_OUTPUT/changes.diff"
+
+# File should be empty (0 bytes)
+_diff_bytes=$(wc -c < "$FAKE_OUTPUT/changes.diff")
+if [ "$_diff_bytes" -eq 0 ]; then
+    printf "  PASS: changes.diff is empty (0 bytes)\n"
+    PASS_COUNT=$((PASS_COUNT + 1))
+else
+    printf "  FAIL: changes.diff should be empty, got %d bytes\n" "$_diff_bytes" >&2
+    FAIL_COUNT=$((FAIL_COUNT + 1))
+fi
+
+printf "\n-- changes.diff: contains actual diff when mock modifies a file --\n"
+
+# Create a git repo, have mock-aider modify a tracked file, verify diff
+rm -rf "$FAKE_OUTPUT"
+MODIFY_GIT="$TEST_TMPDIR/modify-git"
+mkdir -p "$MODIFY_GIT"
+(cd "$MODIFY_GIT" && git init -q && git config user.email "test@test.com" && git config user.name "Test" && printf "original content\n" > target.txt && git add target.txt && git commit -q -m "init")
+
+env AIDER_BIN="$MOCK_AIDER" MOCK_AIDER_MODIFY_FILE="$MODIFY_GIT/target.txt" \
+    sh "$RUNNER" \
+    --codebase-dir "$MODIFY_GIT" --output-dir "$FAKE_OUTPUT" \
+    --message "hello" --timeout 60 --model gpt-4 \
+    >/dev/null 2>&1 || true
+
+assert_file_exists "changes.diff exists (with changes)" "$FAKE_OUTPUT/changes.diff"
+
+# Diff should be non-empty
+_diff_bytes=$(wc -c < "$FAKE_OUTPUT/changes.diff")
+if [ "$_diff_bytes" -gt 0 ]; then
+    printf "  PASS: changes.diff is non-empty (%d bytes)\n" "$_diff_bytes"
+    PASS_COUNT=$((PASS_COUNT + 1))
+else
+    printf "  FAIL: changes.diff should be non-empty for modified file\n" >&2
+    FAIL_COUNT=$((FAIL_COUNT + 1))
+fi
+
+# Diff should mention the target file
+assert_file_contains "changes.diff mentions target.txt" "$FAKE_OUTPUT/changes.diff" "target.txt"
+assert_file_contains "changes.diff has diff header" "$FAKE_OUTPUT/changes.diff" "diff --git"
+
+printf "\n-- Non-git codebase dir: changes.diff empty, diff_capture_error true --\n"
+
+rm -rf "$FAKE_OUTPUT"
+NON_GIT_DIR="$TEST_TMPDIR/non-git-dir"
+mkdir -p "$NON_GIT_DIR"
+
+_nongit_exit=0
+env AIDER_BIN="$MOCK_AIDER" \
+    sh "$RUNNER" \
+    --codebase-dir "$NON_GIT_DIR" --output-dir "$FAKE_OUTPUT" \
+    --message "hello" --timeout 60 --model gpt-4 \
+    >/dev/null 2>&1 || _nongit_exit=$?
+
+# Exit code should be Aider's exit code (0), not 2
+if [ "$_nongit_exit" -eq 0 ]; then
+    printf "  PASS: non-git codebase exits with Aider exit code (0), not 2\n"
+    PASS_COUNT=$((PASS_COUNT + 1))
+else
+    printf "  FAIL: non-git codebase should exit 0 (Aider exit), got %d\n" "$_nongit_exit" >&2
+    FAIL_COUNT=$((FAIL_COUNT + 1))
+fi
+
+assert_file_exists "changes.diff exists (non-git)" "$FAKE_OUTPUT/changes.diff"
+
+# changes.diff should be empty
+_diff_bytes=$(wc -c < "$FAKE_OUTPUT/changes.diff")
+if [ "$_diff_bytes" -eq 0 ]; then
+    printf "  PASS: changes.diff is empty in non-git dir\n"
+    PASS_COUNT=$((PASS_COUNT + 1))
+else
+    printf "  FAIL: changes.diff should be empty in non-git dir, got %d bytes\n" "$_diff_bytes" >&2
+    FAIL_COUNT=$((FAIL_COUNT + 1))
+fi
+
+assert_json_field "diff_capture_error is true (non-git)" "$FAKE_OUTPUT/metadata.json" ".diff_capture_error" "true"
+
+printf "\n-- Timeout: partial artifacts present --\n"
+
+rm -rf "$FAKE_OUTPUT"
+TIMEOUT_GIT="$TEST_TMPDIR/timeout-git"
+mkdir -p "$TIMEOUT_GIT"
+(cd "$TIMEOUT_GIT" && git init -q && git config user.email "test@test.com" && git config user.name "Test" && printf "x\n" > f.txt && git add f.txt && git commit -q -m "init")
+
+env AIDER_BIN="$MOCK_AIDER" MOCK_AIDER_SLEEP=10 \
+    sh "$RUNNER" \
+    --codebase-dir "$TIMEOUT_GIT" --output-dir "$FAKE_OUTPUT" \
+    --message "hello" --timeout 2 --model gpt-4 \
+    >/dev/null 2>&1 || true
+
+assert_file_exists "stdout.log exists after timeout" "$FAKE_OUTPUT/stdout.log"
+assert_file_exists "stderr.log exists after timeout" "$FAKE_OUTPUT/stderr.log"
+assert_file_exists "metadata.json exists after timeout (2)" "$FAKE_OUTPUT/metadata.json"
+assert_file_exists "changes.diff exists after timeout" "$FAKE_OUTPUT/changes.diff"
+assert_json_field "exit_code is 124 after timeout (2)" "$FAKE_OUTPUT/metadata.json" ".exit_code" "124"
+
+printf "\n-- Metadata: files_modified is valid JSON array --\n"
+
+# Test with the diff that has changes (from the modify-git test above)
+rm -rf "$FAKE_OUTPUT"
+MODIFY_GIT2="$TEST_TMPDIR/modify-git2"
+mkdir -p "$MODIFY_GIT2"
+(cd "$MODIFY_GIT2" && git init -q && git config user.email "test@test.com" && git config user.name "Test" && printf "original\n" > code.py && git add code.py && git commit -q -m "init")
+
+env AIDER_BIN="$MOCK_AIDER" MOCK_AIDER_MODIFY_FILE="$MODIFY_GIT2/code.py" \
+    sh "$RUNNER" \
+    --codebase-dir "$MODIFY_GIT2" --output-dir "$FAKE_OUTPUT" \
+    --message "hello" --timeout 60 --model gpt-4 \
+    >/dev/null 2>&1 || true
+
+# files_modified must be a JSON array
+_fm_type=$(jq -r '.files_modified | type' "$FAKE_OUTPUT/metadata.json" 2>/dev/null)
+if [ "$_fm_type" = "array" ]; then
+    printf "  PASS: files_modified is a JSON array\n"
+    PASS_COUNT=$((PASS_COUNT + 1))
+else
+    printf "  FAIL: files_modified should be array, got '%s'\n" "$_fm_type" >&2
+    FAIL_COUNT=$((FAIL_COUNT + 1))
+fi
+
+# files_modified should contain code.py
+_fm_contains=$(jq -r '.files_modified | map(select(. == "code.py")) | length' "$FAKE_OUTPUT/metadata.json" 2>/dev/null)
+if [ "$_fm_contains" -gt 0 ] 2>/dev/null; then
+    printf "  PASS: files_modified contains code.py\n"
+    PASS_COUNT=$((PASS_COUNT + 1))
+else
+    printf "  FAIL: files_modified should contain code.py\n" >&2
+    FAIL_COUNT=$((FAIL_COUNT + 1))
+fi
+
+# Empty files_modified for clean repo
+rm -rf "$FAKE_OUTPUT"
+env AIDER_BIN="$MOCK_AIDER" \
+    sh "$RUNNER" \
+    --codebase-dir "$CLEAN_GIT" --output-dir "$FAKE_OUTPUT" \
+    --message "hello" --timeout 60 --model gpt-4 \
+    >/dev/null 2>&1 || true
+
+_fm_len=$(jq -r '.files_modified | length' "$FAKE_OUTPUT/metadata.json" 2>/dev/null)
+if [ "$_fm_len" -eq 0 ] 2>/dev/null; then
+    printf "  PASS: files_modified is empty array for clean repo\n"
+    PASS_COUNT=$((PASS_COUNT + 1))
+else
+    printf "  FAIL: files_modified should be empty for clean repo, got length %s\n" "$_fm_len" >&2
+    FAIL_COUNT=$((FAIL_COUNT + 1))
+fi
+
+printf "\n-- Metadata: diff_size_bytes matches wc -c --\n"
+
+# Use the modify-git2 output that has a non-empty diff
+_expected_size=$(wc -c < "$FAKE_OUTPUT/changes.diff")
+_meta_size=$(jq -r '.diff_size_bytes' "$FAKE_OUTPUT/metadata.json" 2>/dev/null)
+
+# For this test, re-run with modified file to get a non-trivial diff_size_bytes
+rm -rf "$FAKE_OUTPUT"
+MODIFY_GIT3="$TEST_TMPDIR/modify-git3"
+mkdir -p "$MODIFY_GIT3"
+(cd "$MODIFY_GIT3" && git init -q && git config user.email "test@test.com" && git config user.name "Test" && printf "original\n" > data.txt && git add data.txt && git commit -q -m "init")
+
+env AIDER_BIN="$MOCK_AIDER" MOCK_AIDER_MODIFY_FILE="$MODIFY_GIT3/data.txt" \
+    sh "$RUNNER" \
+    --codebase-dir "$MODIFY_GIT3" --output-dir "$FAKE_OUTPUT" \
+    --message "hello" --timeout 60 --model gpt-4 \
+    >/dev/null 2>&1 || true
+
+_expected_size=$(wc -c < "$FAKE_OUTPUT/changes.diff")
+_meta_size=$(jq -r '.diff_size_bytes' "$FAKE_OUTPUT/metadata.json" 2>/dev/null)
+if [ "$_meta_size" = "$_expected_size" ]; then
+    printf "  PASS: diff_size_bytes (%s) matches wc -c changes.diff (%s)\n" "$_meta_size" "$_expected_size"
+    PASS_COUNT=$((PASS_COUNT + 1))
+else
+    printf "  FAIL: diff_size_bytes (%s) does not match wc -c changes.diff (%s)\n" "$_meta_size" "$_expected_size" >&2
+    FAIL_COUNT=$((FAIL_COUNT + 1))
+fi
+
+# Also check diff_size_bytes is > 0 for a modified file
+if [ "$_meta_size" -gt 0 ] 2>/dev/null; then
+    printf "  PASS: diff_size_bytes > 0 for modified file\n"
+    PASS_COUNT=$((PASS_COUNT + 1))
+else
+    printf "  FAIL: diff_size_bytes should be > 0 for modified file\n" >&2
+    FAIL_COUNT=$((FAIL_COUNT + 1))
+fi
+
+# Check diff_size_bytes is 0 for clean repo
+rm -rf "$FAKE_OUTPUT"
+env AIDER_BIN="$MOCK_AIDER" \
+    sh "$RUNNER" \
+    --codebase-dir "$CLEAN_GIT" --output-dir "$FAKE_OUTPUT" \
+    --message "hello" --timeout 60 --model gpt-4 \
+    >/dev/null 2>&1 || true
+
+assert_json_field "diff_size_bytes is 0 for clean repo" "$FAKE_OUTPUT/metadata.json" ".diff_size_bytes" "0"
+
+printf "\n-- Metadata: diff_capture_error is false for valid git repos --\n"
+
+assert_json_field "diff_capture_error is false for git repo" "$FAKE_OUTPUT/metadata.json" ".diff_capture_error" "false"
+
+printf "\n-- Security: no API key patterns --\n"
+
+# Use a fresh run
+rm -rf "$FAKE_OUTPUT"
+env AIDER_BIN="$MOCK_AIDER" \
+    sh "$RUNNER" \
+    --codebase-dir "$CLEAN_GIT" --output-dir "$FAKE_OUTPUT" \
+    --message "hello" --timeout 60 --model gpt-4 \
+    >/dev/null 2>&1 || true
+
+assert_file_not_contains "no API key patterns in metadata.json (2)" \
+    "$FAKE_OUTPUT/metadata.json" "api.key|anthropic|openai"
+assert_file_not_contains "no API key patterns in stdout.log" \
+    "$FAKE_OUTPUT/stdout.log" "api.key|anthropic|openai"
+
+printf "\n-- Error path: mock exits 1, artifacts present --\n"
+
+rm -rf "$FAKE_OUTPUT"
+env AIDER_BIN="$MOCK_AIDER" MOCK_AIDER_EXIT_CODE=1 \
+    sh "$RUNNER" \
+    --codebase-dir "$CLEAN_GIT" --output-dir "$FAKE_OUTPUT" \
+    --message "hello" --timeout 60 --model gpt-4 \
+    >/dev/null 2>&1 || true
+
+assert_file_exists "stdout.log exists after error" "$FAKE_OUTPUT/stdout.log"
+assert_file_exists "stderr.log exists after error" "$FAKE_OUTPUT/stderr.log"
+assert_file_exists "metadata.json exists after error (2)" "$FAKE_OUTPUT/metadata.json"
+assert_file_exists "changes.diff exists after error" "$FAKE_OUTPUT/changes.diff"
+
+printf "\n-- Help documents all 5 artifacts --\n"
+
+_help_output=$(sh "$RUNNER" --help 2>&1)
+for _artifact in "stdout.log" "stderr.log" "llm-history.txt" "changes.diff" "metadata.json"; do
+    if printf '%s' "$_help_output" | grep -q "$_artifact"; then
+        printf "  PASS: --help documents %s\n" "$_artifact"
+        PASS_COUNT=$((PASS_COUNT + 1))
+    else
+        printf "  FAIL: --help does not document %s\n" "$_artifact" >&2
+        FAIL_COUNT=$((FAIL_COUNT + 1))
+    fi
+done
+
 printf "\n-- shellcheck --\n"
 
 # Run shellcheck on aider-runner.sh

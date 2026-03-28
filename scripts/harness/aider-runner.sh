@@ -8,12 +8,20 @@
 # constructs the full Aider invocation.
 #
 # Captures stdout/stderr to separate log files, enforces a wall-clock timeout,
-# records structured exit codes, and writes metadata.json with run details.
+# runs git diff to capture code changes, records structured exit codes, and
+# writes metadata.json with run details.
 #
 # Usage:
 #   ./aider-runner.sh --codebase-dir <path> --output-dir <path> \
 #     --timeout <seconds> --model <name> --message <text> [options]
 #   ./aider-runner.sh --help
+#
+# Output artifacts (all written to --output-dir):
+#   stdout.log       Aider's stdout
+#   stderr.log       Aider's stderr
+#   llm-history.txt  LLM conversation history (written by Aider)
+#   changes.diff     git diff of codebase after Aider exits
+#   metadata.json    Structured run metadata (exit code, timing, files, etc.)
 #
 # Environment:
 #   AIDER_BIN   Override the Aider binary path
@@ -24,6 +32,10 @@
 #   1   Aider error (Aider exited non-zero, not timeout)
 #   2   Setup error (bad arguments, missing binary, etc.)
 #   124 Timeout (wall-clock limit exceeded)
+#
+# Note: The codebase's .gitignore should exclude Aider cache paths
+# (e.g., .aider.tags.cache.v3/) to keep changes.diff clean. This is
+# the responsibility of the codebase setup (DISC-04), not this wrapper.
 #
 # =============================================================================
 
@@ -57,6 +69,7 @@ END_TIME=""
 END_EPOCH=""
 WALL_TIME=0
 EXIT_REASON="setup_error"
+DIFF_CAPTURE_ERROR="false"
 
 # ---------------------------------------------------------------------------
 # usage — print help and exit
@@ -78,6 +91,13 @@ usage() {
     printf "  --edit-format <format>   Aider edit format (default: diff)\n"
     printf "  --aider-timeout <secs>   Per-API-call timeout passed to Aider\n"
     printf "  --help, -h               Show this help message\n"
+    printf "\n"
+    printf "Output artifacts (written to --output-dir):\n"
+    printf "  stdout.log               Aider's standard output\n"
+    printf "  stderr.log               Aider's standard error\n"
+    printf "  llm-history.txt          LLM conversation history (written by Aider)\n"
+    printf "  changes.diff             git diff of codebase changes after Aider exits\n"
+    printf "  metadata.json            Structured run metadata (JSON)\n"
 }
 
 # ---------------------------------------------------------------------------
@@ -115,6 +135,22 @@ write_metadata() {
         *)   EXIT_REASON="unknown_error" ;;
     esac
 
+    # Calculate diff_size_bytes from changes.diff if it exists
+    _meta_diff_size=0
+    if [ -f "$OUTPUT_DIR/changes.diff" ]; then
+        _meta_diff_size=$(wc -c < "$OUTPUT_DIR/changes.diff")
+    fi
+
+    # Build files_modified JSON array from changes.diff
+    _meta_files_json="[]"
+    if [ -f "$OUTPUT_DIR/changes.diff" ] && [ -s "$OUTPUT_DIR/changes.diff" ]; then
+        _meta_files_json=$(grep '^diff --git' "$OUTPUT_DIR/changes.diff" \
+            | sed 's|diff --git a/||;s| b/.*||' \
+            | jq -R -s 'split("\n") | map(select(length > 0))')
+    fi
+
+    # Write to temp file first, then atomic rename
+    _meta_tmp="$OUTPUT_DIR/metadata.json.tmp.$$"
     jq -n \
         --arg aider_version "$AIDER_VERSION" \
         --arg model "$MODEL" \
@@ -125,8 +161,11 @@ write_metadata() {
         --argjson timeout_seconds "${TIMEOUT:-0}" \
         --argjson exit_code "$AIDER_EXIT" \
         --arg exit_reason "$EXIT_REASON" \
-        --arg stdin_source "/dev/null" \
+        --argjson files_modified "$_meta_files_json" \
+        --argjson diff_size_bytes "$_meta_diff_size" \
+        --argjson diff_capture_error "$DIFF_CAPTURE_ERROR" \
         --argjson llm_history_size_bytes "$LLM_HISTORY_SIZE" \
+        --arg stdin_source "/dev/null" \
         '{
           aider_version: $aider_version,
           model: $model,
@@ -137,11 +176,12 @@ write_metadata() {
           timeout_seconds: $timeout_seconds,
           exit_code: $exit_code,
           exit_reason: $exit_reason,
-          files_modified: [],
-          diff_size_bytes: 0,
+          files_modified: $files_modified,
+          diff_size_bytes: $diff_size_bytes,
+          diff_capture_error: $diff_capture_error,
           llm_history_size_bytes: $llm_history_size_bytes,
           stdin_source: $stdin_source
-        }' > "$OUTPUT_DIR/metadata.json"
+        }' > "$_meta_tmp" && mv "$_meta_tmp" "$OUTPUT_DIR/metadata.json"
 }
 
 # ---------------------------------------------------------------------------
@@ -335,6 +375,21 @@ timeout --kill-after=30 "$TIMEOUT" \
     2> "$OUTPUT_DIR/stderr.log"
 AIDER_EXIT=$?
 set -e
+
+# ---------------------------------------------------------------------------
+# Capture git diff of codebase changes
+# ---------------------------------------------------------------------------
+# CODEBASE_DIR is already the cwd from the cd above, but be explicit.
+# Redirect stderr to /dev/null: if not a git repo, git diff will fail silently.
+# Always ensure changes.diff exists (empty file on failure).
+DIFF_CAPTURE_ERROR="false"
+if git diff > "$OUTPUT_DIR/changes.diff" 2>/dev/null; then
+    : # success
+else
+    # git diff failed (not a git repo, git not available, etc.)
+    DIFF_CAPTURE_ERROR="true"
+    : > "$OUTPUT_DIR/changes.diff"
+fi
 
 # ---------------------------------------------------------------------------
 # Record end time

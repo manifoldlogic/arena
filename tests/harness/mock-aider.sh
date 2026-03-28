@@ -10,6 +10,8 @@
 #   MOCK_AIDER_EXIT_CODE   Exit code to return (default 0)
 #   MOCK_AIDER_SLEEP       Sleep this many seconds before exiting (for timeout tests)
 #   MOCK_AIDER_STDERR      Write this string to stderr before exiting
+#   MOCK_AIDER_MODIFY_FILE If set, write a trivial change to this file path
+#                          (enables git diff testing)
 #
 # =============================================================================
 
@@ -46,6 +48,11 @@ done
 # Write dummy output if --llm-history-file was given
 if [ -n "$LLM_HISTORY_FILE" ]; then
     printf "mock-aider: dummy llm history output\n" > "$LLM_HISTORY_FILE"
+fi
+
+# Modify a file if requested (for git diff testing)
+if [ -n "${MOCK_AIDER_MODIFY_FILE:-}" ]; then
+    printf "mock-aider modification\n" >> "$MOCK_AIDER_MODIFY_FILE"
 fi
 
 # Write mock stdout
