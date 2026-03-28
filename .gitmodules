@@ -10,3 +10,7 @@
 	path = codebases/mattermost-webapp
 	url = https://github.com/mattermost/mattermost-webapp.git
 	shallow = true
+[submodule "codebases/clap"]
+	path = codebases/clap
+	url = https://github.com/clap-rs/clap.git
+	shallow = true
