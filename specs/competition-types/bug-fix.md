@@ -42,7 +42,7 @@ Each bug-fix task is classified into one of three difficulty tiers, analogous to
 | `cross-cutting` | Cross-Cutting | Bug involves interactions across multiple files, modules, or layers. Diagnosis requires tracing data flow or control flow across boundaries. Analogous to search's depth tier.                                                     | Yellow/Signal -- scores diverge as competitors differ in diagnostic and patching quality.       |
 | `subtle`        | Subtle        | Bug involves race conditions, edge cases, implicit invariants, or behavior that only manifests under specific conditions. The root cause is non-obvious even once the right code is found. Analogous to search's constrained tier. | Variable -- tests strategy and depth of understanding; divergence depends on reasoning quality. |
 
-The `query_difficulty` field on the round result uses these tier identifiers.
+The `difficulty_tier` field on the round result uses these tier identifiers.
 
 ---
 
@@ -302,7 +302,7 @@ Budget limits are enforced by the harness. When a limit is reached, the harness 
 
 This specification is written for the **discovery sprint** -- the first set of bug-fix rounds intended to validate the competition format. The following constraints apply:
 
-1. **Limited codebase coverage.** Initial bug-fix tasks will use the same codebases as the search competition (django, fastapi, mattermost-webapp). Bug-fix tasks require reproducible defects at pinned commits, which limits the available task pool.
+1. **Limited codebase coverage.** Initial bug-fix tasks will target `clap-rs/clap` (a Rust CLI library selected by DISC-02). The competition format is designed to be codebase-agnostic; the django, fastapi, and mattermost-webapp codebases used by the search competition may be used in later bug-fix rounds. Bug-fix tasks require reproducible defects at pinned commits, which limits the available task pool.
 
 2. **Test suite dependency.** The correctness verification protocol depends on the target codebase having a reliable, fast test suite. Codebases with flaky tests, slow test suites, or poor test coverage may not be suitable for bug-fix tasks.
 

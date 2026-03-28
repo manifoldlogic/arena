@@ -166,10 +166,24 @@ Extracted tier names from both documents and compared for exact string match.
 
 **Result:** All three tier names are identical strings in both documents.
 
-Additionally, bug-fix.md states (line 45): "The `query_difficulty` field on the round result uses these tier identifiers." The schema names this field `difficulty_tier` rather than `query_difficulty`. This is a naming difference worth noting, though the schema is the authoritative field reference and the spec text is descriptive. The schema field name `difficulty_tier` is more precise for the bug-fix context (the spec's `query_difficulty` naming aligns with the search competition's terminology).
+~~Additionally, bug-fix.md states (line 45): "The `query_difficulty` field on the round result uses these tier identifiers." The schema names this field `difficulty_tier` rather than `query_difficulty`.~~ **Resolved by ARENA-44.4001:** bug-fix.md line 45 now correctly references `difficulty_tier`.
 
 ## Overall Verdict
 
 **PASS**
 
-All 7 cross-reference checks passed. The bug-fix competition spec, discovery round schema, and existing rounds.jsonl schema are internally consistent. One minor observation: the spec references the field as `query_difficulty` (line 45) while the schema names it `difficulty_tier` (line 78). This is a cosmetic naming difference, not a functional inconsistency -- the schema is the authoritative field definition and `difficulty_tier` is the correct field name.
+All 7 cross-reference checks passed. The bug-fix competition spec, discovery round schema, and existing rounds.jsonl schema are internally consistent.
+
+---
+
+## Re-Check After ARENA-44.4001 Corrections
+
+**Date:** 2026-03-28
+**Checked by:** verify-task
+
+ARENA-44.4001 applied two HIGH-severity corrections to `specs/competition-types/bug-fix.md`:
+
+1. **Field name mismatch resolved:** Line 45 now reads "The `difficulty_tier` field" (was `query_difficulty`). Check 7 (difficulty tier alignment) continues to PASS — the spec and schema now use identical field naming.
+2. **Codebase scope corrected:** Known Limitations now correctly identifies `clap-rs/clap` as the discovery sprint target, consistent with the planning documents.
+
+**Re-check result:** No new inconsistencies introduced. All 7 original checks remain PASS.
