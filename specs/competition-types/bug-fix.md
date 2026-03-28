@@ -125,7 +125,7 @@ These dimensions are recorded as raw values, not judged on a scale. They are rep
 
 ### Formula
 
-```
+```text
 composite = W_c * correctness + W_p * process_quality + W_q * patch_quality
 ```
 
@@ -180,7 +180,7 @@ The judge receives the following artifacts in this fixed order:
 
 ### Judge Prompt Template Outline
 
-```
+```text
 You are evaluating {N} competitors' attempts to fix a bug.
 
 ## Issue

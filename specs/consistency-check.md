@@ -127,7 +127,7 @@ Extracted variable names from the composite formula in bug-fix.md and verified e
 
 **Formula** (bug-fix.md line 128):
 
-```
+```text
 composite = W_c * correctness + W_p * process_quality + W_q * patch_quality
 ```
 
