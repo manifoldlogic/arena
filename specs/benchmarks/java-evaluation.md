@@ -297,7 +297,7 @@ _Mitigating factor_: Lucene's enormous issue history (2,554 open issues, 73K+ co
 
 **Rating: Weak**
 
-Lucene has 933,720 lines of code across multiple complex modules: core search, analysis, facets, spatial, codecs, sandbox, and more (openhub.net/p/lucene). This is approximately 4.5x larger than the 644K LoC estimate in planning documents. At this scale, Lucene significantly exceeds Arena's current largest benchmark. Agent tool budgets may be insufficient for meaningful navigation and modification. Context window limitations could prevent agents from understanding cross-module dependencies.
+Lucene has 933,720 lines of code across multiple complex modules: core search, analysis, facets, spatial, codecs, sandbox, and more (openhub.net/p/lucene). This is approximately 45% larger than the 644K LoC estimate in planning documents (~1.45x). At this scale, Lucene significantly exceeds Arena's current largest benchmark. Agent tool budgets may be insufficient for meaningful navigation and modification. Context window limitations could prevent agents from understanding cross-module dependencies.
 
 _Mitigating factor_: SWE-bench Multilingual tasks target specific subsystems (core indexing, geometry, query parsing, facet search), not the entire codebase (HuggingFace dataset viewer). Agents only need to navigate relevant modules for each task, substantially reducing the effective working set.
 
