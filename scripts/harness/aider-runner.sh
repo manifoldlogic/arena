@@ -7,6 +7,9 @@
 # competition use. Accepts competition parameters as CLI arguments and
 # constructs the full Aider invocation.
 #
+# Captures stdout/stderr to separate log files, enforces a wall-clock timeout,
+# records structured exit codes, and writes metadata.json with run details.
+#
 # Usage:
 #   ./aider-runner.sh --codebase-dir <path> --output-dir <path> \
 #     --timeout <seconds> --model <name> --message <text> [options]
@@ -15,6 +18,12 @@
 # Environment:
 #   AIDER_BIN   Override the Aider binary path
 #               (default: specs/competitors/aider/.venv/bin/aider)
+#
+# Exit codes:
+#   0   Success (Aider exited 0)
+#   1   Aider error (Aider exited non-zero, not timeout)
+#   2   Setup error (bad arguments, missing binary, etc.)
+#   124 Timeout (wall-clock limit exceeded)
 #
 # =============================================================================
 
@@ -38,6 +47,18 @@ EDIT_FORMAT="diff"
 AIDER_TIMEOUT=""
 
 # ---------------------------------------------------------------------------
+# Runtime state (used by write_metadata)
+# ---------------------------------------------------------------------------
+AIDER_EXIT=2
+AIDER_VERSION="unknown"
+START_TIME=""
+START_EPOCH=""
+END_TIME=""
+END_EPOCH=""
+WALL_TIME=0
+EXIT_REASON="setup_error"
+
+# ---------------------------------------------------------------------------
 # usage — print help and exit
 # ---------------------------------------------------------------------------
 usage() {
@@ -57,6 +78,70 @@ usage() {
     printf "  --edit-format <format>   Aider edit format (default: diff)\n"
     printf "  --aider-timeout <secs>   Per-API-call timeout passed to Aider\n"
     printf "  --help, -h               Show this help message\n"
+}
+
+# ---------------------------------------------------------------------------
+# write_metadata — write metadata.json to OUTPUT_DIR (called on all exit paths)
+# ---------------------------------------------------------------------------
+write_metadata() {
+    # Guard: if OUTPUT_DIR was never set or created, skip
+    if [ -z "$OUTPUT_DIR" ] || [ ! -d "$OUTPUT_DIR" ]; then
+        return
+    fi
+
+    # Capture end time if not already set
+    if [ -z "$END_TIME" ]; then
+        END_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+        END_EPOCH=$(date +%s)
+    fi
+
+    # Calculate wall time
+    if [ -n "$START_EPOCH" ] && [ -n "$END_EPOCH" ]; then
+        WALL_TIME=$((END_EPOCH - START_EPOCH))
+    fi
+
+    # Calculate llm_history_size_bytes
+    LLM_HISTORY_SIZE=0
+    if [ -f "$OUTPUT_DIR/llm-history.txt" ]; then
+        LLM_HISTORY_SIZE=$(wc -c < "$OUTPUT_DIR/llm-history.txt")
+    fi
+
+    # Map exit code to exit reason
+    case "$AIDER_EXIT" in
+        0)   EXIT_REASON="success" ;;
+        1)   EXIT_REASON="aider_error" ;;
+        124) EXIT_REASON="timeout" ;;
+        2)   EXIT_REASON="setup_error" ;;
+        *)   EXIT_REASON="unknown_error" ;;
+    esac
+
+    jq -n \
+        --arg aider_version "$AIDER_VERSION" \
+        --arg model "$MODEL" \
+        --arg edit_format "$EDIT_FORMAT" \
+        --arg start_time "${START_TIME:-}" \
+        --arg end_time "$END_TIME" \
+        --argjson wall_time "$WALL_TIME" \
+        --argjson timeout_seconds "${TIMEOUT:-0}" \
+        --argjson exit_code "$AIDER_EXIT" \
+        --arg exit_reason "$EXIT_REASON" \
+        --arg stdin_source "/dev/null" \
+        --argjson llm_history_size_bytes "$LLM_HISTORY_SIZE" \
+        '{
+          aider_version: $aider_version,
+          model: $model,
+          edit_format: $edit_format,
+          start_time_utc: $start_time,
+          end_time_utc: $end_time,
+          wall_time_seconds: $wall_time,
+          timeout_seconds: $timeout_seconds,
+          exit_code: $exit_code,
+          exit_reason: $exit_reason,
+          files_modified: [],
+          diff_size_bytes: 0,
+          llm_history_size_bytes: $llm_history_size_bytes,
+          stdin_source: $stdin_source
+        }' > "$OUTPUT_DIR/metadata.json"
 }
 
 # ---------------------------------------------------------------------------
@@ -175,6 +260,42 @@ if [ ! -f "$AIDER_BIN" ] || [ ! -x "$AIDER_BIN" ]; then
     exit 2
 fi
 
+# timeout command must be available
+if ! command -v timeout >/dev/null 2>&1; then
+    printf "Error: 'timeout' command not found (required for wall-clock enforcement)\n" >&2
+    exit 2
+fi
+
+# jq must be available (for metadata.json generation)
+if ! command -v jq >/dev/null 2>&1; then
+    printf "Error: 'jq' command not found (required for metadata generation)\n" >&2
+    exit 2
+fi
+
+# ---------------------------------------------------------------------------
+# Install EXIT trap to ensure metadata is always written
+# ---------------------------------------------------------------------------
+trap 'write_metadata' EXIT
+
+# ---------------------------------------------------------------------------
+# Capture Aider version
+# ---------------------------------------------------------------------------
+AIDER_VERSION=$("$AIDER_BIN" --version 2>/dev/null) || {
+    printf "Error: failed to get Aider version from '%s --version'\n" "$AIDER_BIN" >&2
+    exit 2
+}
+# Strip to first version-like token (e.g., "aider 0.42.0" -> "0.42.0")
+AIDER_VERSION=$(printf '%s' "$AIDER_VERSION" | sed 's/^[^0-9]*//' | head -1)
+if [ -z "$AIDER_VERSION" ]; then
+    AIDER_VERSION="unknown"
+fi
+
+# ---------------------------------------------------------------------------
+# Record start time
+# ---------------------------------------------------------------------------
+START_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+START_EPOCH=$(date +%s)
+
 # ---------------------------------------------------------------------------
 # Construct Aider command
 # ---------------------------------------------------------------------------
@@ -200,10 +321,29 @@ if [ -n "$AIDER_TIMEOUT" ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Execute Aider
+# Execute Aider with timeout, output capture, and stdin from /dev/null
 # ---------------------------------------------------------------------------
-# TODO: ARENA-46.2002 will wrap this invocation with timeout enforcement
-# and stdin piping. The AIDER_CMD variable is structured so that task can
-# wrap it cleanly with: timeout --kill-after=30 "$TIMEOUT" $AIDER_CMD
 cd "$CODEBASE_DIR"
-$AIDER_CMD
+
+# Disable set -e for the invocation so we can capture the exit code
+set +e
+# shellcheck disable=SC2086
+timeout --kill-after=30 "$TIMEOUT" \
+    $AIDER_CMD \
+    < /dev/null \
+    > "$OUTPUT_DIR/stdout.log" \
+    2> "$OUTPUT_DIR/stderr.log"
+AIDER_EXIT=$?
+set -e
+
+# ---------------------------------------------------------------------------
+# Record end time
+# ---------------------------------------------------------------------------
+END_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+END_EPOCH=$(date +%s)
+
+# ---------------------------------------------------------------------------
+# Exit with the Aider/timeout exit code
+# (metadata.json is written by the EXIT trap)
+# ---------------------------------------------------------------------------
+exit "$AIDER_EXIT"
