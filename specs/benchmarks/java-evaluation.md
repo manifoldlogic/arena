@@ -97,7 +97,7 @@ _Potential weakness_: The multi-workflow CI setup is more complex to reproduce l
 
 **Rating: Adequate**
 
-The repository has 336 open issues (GitHub API, 2026-03-28) and has been active since 2015. Maintenance mode means the new issue creation rate is declining, but the existing corpus is substantial for historical task mining. SWE-bench datasets have already successfully mined gson issues: 5 Multi-SWE-bench instances, 9 SWE-bench Multilingual tasks, and 9 SWE-bench-java-verified instances. Last push was 2026-03-19, indicating ongoing (if infrequent) activity.
+The repository has 336 open issues (GitHub API, 2026-03-28) and has been active since 2015. Maintenance mode means the new issue creation rate is declining, but the existing corpus is substantial for historical task mining. SWE-bench datasets have already successfully mined gson issues: 5 Multi-SWE-bench instances, 9 SWE-bench Multilingual tasks, and 5 SWE-bench-java-verified instances. Last push was 2026-03-19, indicating ongoing (if infrequent) activity.
 
 _Potential weakness_: Declining issue creation limits future task expansion. The existing corpus is adequate for current benchmarking but unlikely to grow significantly.
 
@@ -109,10 +109,10 @@ _Potential weakness_: Declining issue creation limits future task expansion. The
 | ----------------------- | -------------- | ------------------------------------------ |
 | Multi-SWE-bench         | 5              | arXiv:2504.02605v1, Table 1                |
 | SWE-bench Multilingual  | 9              | swebench.com/multilingual.html             |
-| SWE-bench-java-verified | 9              | arXiv:2408.14354                           |
-| **Total (upper bound)** | **~23**        | Union across datasets; some overlap likely |
+| SWE-bench-java-verified | 5              | HuggingFace dataset file (see Data Correction note) |
+| **Total (upper bound)** | **~19**        | Union across datasets; some overlap likely |
 
-Gson's resolution rate on SWE-bench Multilingual is 66.7% (6 resolved, 3 unresolved) -- the highest among Java repos in that dataset (swebench.com/multilingual.html). However, with at most ~23 unique validated tasks, gson has a limited task pool for sustained benchmarking.
+Gson's resolution rate on SWE-bench Multilingual is 66.7% (6 resolved, 3 unresolved) -- the highest among Java repos in that dataset (swebench.com/multilingual.html). However, with at most ~19 unique validated tasks, gson has a limited task pool for sustained benchmarking.
 
 _Mitigating factor_: The high resolution rate suggests gson tasks are well-suited for agent evaluation. The small codebase makes tasks more tractable, which partially offsets the low count. Per-repo difficulty distribution is not published; the Java aggregate across all repos is 27 easy / 65 medium / 36 hard out of 128 total instances (Multi-SWE-bench Table 2, arXiv:2504.02605v1).
 
@@ -136,7 +136,7 @@ _Mitigating factor_: For benchmarking, stability is a positive. Pinned commits r
 
 #### Overall Rating
 
-Gson is a **compact, stable, highly reproducible** benchmark candidate hampered by a **low validated task count**. Its small codebase and standard Maven build make it the easiest candidate to onboard, but ~23 tasks may be insufficient for sustained competition rounds. Best suited as a secondary benchmark or for initial Java toolchain validation.
+Gson is a **compact, stable, highly reproducible** benchmark candidate hampered by a **low validated task count**. Its small codebase and standard Maven build make it the easiest candidate to onboard, but ~19 tasks may be insufficient for sustained competition rounds. Best suited as a secondary benchmark or for initial Java toolchain validation.
 
 ---
 
@@ -346,12 +346,12 @@ The differentiator is the balance of remaining criteria. Gson and mockito each h
 
 - **Lowest onboarding friction**: Small codebase (261 files), standard Maven build, JDK 21 compatibility. An engineer can clone, build, and run tests in minutes. This makes it ideal for validating the Java devcontainer toolchain before tackling more complex repositories.
 - **Highest task tractability**: The 66.7% SWE-bench Multilingual resolution rate (highest among Java repos) indicates agents can realistically solve gson tasks. This produces meaningful benchmark signal from day one.
-- **Broadest SWE-bench coverage**: Gson is the only primary candidate present in all three SWE-bench datasets (5 Multi-SWE-bench + 9 Multilingual + 9 java-verified = ~23 tasks upper bound). While the absolute count is low, it exceeds mockito (6 total) and lucene (9 total).
+- **Broadest SWE-bench coverage**: Gson is the only primary candidate present in all three SWE-bench datasets (5 Multi-SWE-bench + 9 Multilingual + 5 java-verified = ~19 tasks upper bound). While the absolute count is low, it exceeds mockito (6 total) and lucene (9 total).
 - **Stability advantage**: Maintenance mode is a feature, not a bug, for benchmarking. Pinned commits stay valid. The codebase does not shift under active development.
 
-**Tiebreaker rationale** (gson vs. mockito, both at 2 Strong / 1 Weak): Gson wins on (a) codebase complexity (Strong vs. Adequate -- smaller is better for first onboarding), (b) validated task count (23 vs. 6 -- nearly 4x more tasks), and (c) SWE-bench dataset breadth (3 datasets vs. 1). Mockito's stronger test suite and issue history do not overcome these practical advantages for an initial onboarding decision.
+**Tiebreaker rationale** (gson vs. mockito, both at 2 Strong / 1 Weak): Gson wins on (a) codebase complexity (Strong vs. Adequate -- smaller is better for first onboarding), (b) validated task count (19 vs. 6 -- over 3x more tasks), and (c) SWE-bench dataset breadth (3 datasets vs. 1). Mockito's stronger test suite and issue history do not overcome these practical advantages for an initial onboarding decision.
 
-**Why gson over jackson-databind for first onboarding**: jackson-databind has a substantially larger validated task pool (~91 tasks vs. ~23 for gson), which makes it the stronger long-term benchmark candidate. However, gson's codebase is roughly one-third the size (~80K LoC estimated vs. 217.5K LoC for jackson-databind, with 261 files vs. 1,230 files), making it far more tractable for initial toolchain validation and agent feasibility testing. Both use Maven with straightforward build commands, so build complexity is comparable. Gson is preferred for first onboarding because it minimizes the variables when standing up Arena's Java pipeline for the first time; jackson-databind is the recommended first fallback once gson's task pool is exhausted (see [Alternative Candidates](#alternative-candidates)).
+**Why gson over jackson-databind for first onboarding**: jackson-databind has a substantially larger validated task pool (~91 tasks vs. ~19 for gson), which makes it the stronger long-term benchmark candidate. However, gson's codebase is roughly one-third the size (~80K LoC estimated vs. 217.5K LoC for jackson-databind, with 261 files vs. 1,230 files), making it far more tractable for initial toolchain validation and agent feasibility testing. Both use Maven with straightforward build commands, so build complexity is comparable. Gson is preferred for first onboarding because it minimizes the variables when standing up Arena's Java pipeline for the first time; jackson-databind is the recommended first fallback once gson's task pool is exhausted (see [Alternative Candidates](#alternative-candidates)).
 
 ### 2nd Choice: mockito/mockito
 
@@ -376,7 +376,7 @@ Lucene should be evaluated for onboarding after gson and mockito are established
 
 ### What If We Are Wrong
 
-- **If gson's ~23 tasks are exhausted quickly**: Pivot to jackson-databind (~91 validated tasks). Jackson-databind was not a primary candidate in this evaluation's scope but has substantially better task coverage. See [Alternative Candidates](#alternative-candidates).
+- **If gson's ~19 tasks are exhausted quickly**: Pivot to jackson-databind (~91 validated tasks). Jackson-databind was not a primary candidate in this evaluation's scope but has substantially better task coverage. See [Alternative Candidates](#alternative-candidates).
 - **If gson's maintenance mode leads to stale benchmarks**: Mockito (with ongoing development) or lucene (with Apache governance) provide repositories with active issue streams.
 - **If mockito's maintainer transition fails**: Defer mockito indefinitely. The combination of gson + jackson-databind covers the Java benchmark need without mockito.
 - **If lucene's codebase size is manageable in practice**: Promote lucene to second choice. Its issue depth and community health are the strongest among all candidates.
@@ -457,8 +457,8 @@ Both `installMaven: true` and `installGradle: true` are specified in the recomme
 | ------------------------------------------ | ----------- | ---------------- | ---------------- | ---------------------------------------- |
 | Multi-SWE-bench (arXiv:2504.02605v1)       | 5           | 6                | 0 (not included) | Table 1, Instances column                |
 | SWE-bench Multilingual                     | 9           | 0 (not included) | 9                | swebench.com/multilingual.html           |
-| SWE-bench-java-verified (arXiv:2408.14354) | 9           | 0 (not included) | 0 (not included) | Per-repo table                           |
-| **Total (upper bound)**                    | **~23**     | **6**            | **9**            | Union; overlap possible between datasets |
+| SWE-bench-java-verified (arXiv:2408.14354) | 5           | 0 (not included) | 0 (not included) | HuggingFace dataset file                 |
+| **Total (upper bound)**                    | **~19**     | **6**            | **9**            | Union; overlap possible between datasets |
 
 ### Context: Java in Multi-SWE-bench
 
@@ -468,7 +468,7 @@ The three primary candidates collectively account for only 11 of the 128 Java in
 
 ### Context: SWE-bench-java-verified
 
-SWE-bench-java-verified contains 91 verified instances across 6 Java repositories (arXiv:2408.14354). Gson accounts for 9 of those 91 instances (9.9%). Neither mockito nor lucene is included in this dataset. The largest contributor is jackson-databind with 49 instances (53.8% of the dataset), followed by jackson-core, jackson-dataformat-xml, jib, and dubbo (arXiv:2408.14354, Table 1).
+SWE-bench-java-verified contains 91 verified instances across 6 Java repositories (arXiv:2408.14354). Gson accounts for 5 of those 91 instances (5.5%). Neither mockito nor lucene is included in this dataset. The largest contributor is jackson-databind with 49 instances (53.8% of the dataset), followed by jackson-core, jackson-dataformat-xml, jib, and dubbo (arXiv:2408.14354, Table 1).
 
 ---
 
@@ -496,7 +496,7 @@ The following repositories were not selected as primary candidates for this eval
 
 **Data correction**: An earlier version of this document cited 105 SWE-bench-java-verified instances for jackson-databind. The 105 figure was misread from the "Gold Patch #Files" column (average files modified per patch) in arXiv:2408.14354, Table 1. The correct instance count is 49.
 
-**Recommendation**: jackson-databind should be the **first fallback** if gson's ~23 tasks prove insufficient. It arguably has better benchmark suitability than any of the three primary candidates on the Validated Task Count criterion alone.
+**Recommendation**: jackson-databind should be the **first fallback** if gson's ~19 tasks prove insufficient. It arguably has better benchmark suitability than any of the three primary candidates on the Validated Task Count criterion alone.
 
 ### apache/dubbo
 
@@ -530,7 +530,7 @@ The following repositories were not selected as primary candidates for this eval
 
 Sources: arXiv:2504.02605v1 Table 1 (Multi-SWE-bench); HuggingFace Daoguang/Multi-SWE-bench swe-bench-java-verified.json (SWE-bench-java-verified per-repo counts).
 
-**Data correction**: Earlier SWE-bench-java-verified per-repo counts (jackson-core 58, jackson-dataformat-xml 16, jib 13, dubbo 12) were misread from the "Gold Patch #Files" column of arXiv:2408.14354 Table 1. Corrected counts above are from the authoritative dataset file (91 instances total: jackson-databind 49, jackson-core 23, jackson-dataformat-xml 5, gson 5, jib 5, dubbo 4).
+**Data correction**: Earlier SWE-bench-java-verified per-repo counts (jackson-core 58, jackson-dataformat-xml 16, jib 13, dubbo 12) were misread from the "Gold Patch #Files" column of arXiv:2408.14354 Table 1. Corrected counts above are from the authoritative dataset file (91 instances total: jackson-databind 49, jackson-core 23, jackson-dataformat-xml 5, gson 5, jib 5, dubbo 4). Note: the arXiv paper's per-repo table reports 9 gson instances, while the downloaded HuggingFace dataset file contains 5. This evaluation uses the dataset file count (5) as ground truth; the discrepancy may reflect post-publication dataset curation.
 
 **Key observation**: The Jackson ecosystem (jackson-databind + jackson-core + jackson-dataformat-xml) collectively has approximately 65 Multi-SWE-bench instances and 77 SWE-bench-java-verified instances -- substantially more than any individual primary candidate. If Arena's priority is maximizing validated task coverage, the Jackson family of repositories is the strongest choice in the Java ecosystem.
 
@@ -584,4 +584,4 @@ Source: arXiv:2504.02605v1, Table 2. Per-repo difficulty breakdowns are not publ
 
 ### Phase 1 Research Notes
 
-Full research data: `/workspace/_SPECS/arena/tickets/ARENA-51_java-repo-evaluation/deliverables/java-repo-research-notes.md` (ARENA-51.1001 deliverable, 2026-03-28).
+Full research data: ARENA-51.1001 deliverable (`java-repo-research-notes.md`), archived in ticket planning artifacts (2026-03-28).
