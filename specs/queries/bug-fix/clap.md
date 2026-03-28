@@ -3,7 +3,11 @@
 This file defines 5 bug-fix tasks for the clap codebase. Each task corresponds to a
 closed GitHub issue with a linked fix PR that includes test changes (fail-to-pass pattern).
 
-**Areas covered:** Man pages (A-man), Help display (A-help), Parser, Shell completion (A-completion)
+All tasks have been verified using the SWE-bench fail-to-pass methodology: the test
+changes from the fix PR are applied at the pre-fix commit, confirmed to FAIL (demonstrating
+the bug), then the full fix PR is applied, confirmed to PASS.
+
+**Areas covered:** Parser (A-parsing), Help display (A-help), Shell completion engine (A-completion)
 **Difficulty mix:** 2 easy, 3 medium
 
 ---
@@ -13,15 +17,15 @@ closed GitHub issue with a linked fix PR that includes test changes (fail-to-pas
 **Codebase:** clap
 **Category:** bug-fix
 **Difficulty:** easy
-**GitHub Issue:** #3362 - `clap_mangen` should respect the configured display order for args and subcommands
-**Fix PR:** #6142
-**Affected Crate:** clap_mangen
+**GitHub Issue:** #5867 - Default value not filled in on ignored error
+**Fix PR:** #5873
+**Affected Crate:** clap_builder
 **Competition Pinned Commit:** 9ab6dee710aa384e02ec5e9e2cfeadb2f35abf2a (v4.6.0 tagged release; the competition baseline)
-**Pre-Fix Commit:** c7c761f988684ad97c8b2c521b05cf7f8192b3eb
-**Pre-Fix Commit Note:** Predates the tagged release by 191 commits. This is the state of the main branch immediately before the fix PR was merged. The bug is reproducible at this commit (man page output ignores `display_order`). Agents work on the competition pinned commit for the codebase context, but fail-to-pass verification runs at this pre-fix commit.
-**Description:** `clap_mangen` ignores the `display_order` setting when rendering man pages. Arguments and subcommands appear in insertion order rather than the configured display order, which is inconsistent with how `clap_builder` renders help output.
-**Verification:** `cargo test -p clap_mangen -- configured_display_order_args configured_subcmd_order default_subcmd_order`
-**Agent Instructions:** The `clap_mangen` crate does not respect the `display_order()` configuration when generating man pages. Arguments and subcommands are rendered in their insertion order instead of the order specified via `display_order()` on `Arg` and `Command`. Fix the man page rendering in `clap_mangen/src/render.rs` so that arguments in the synopsis and options sections, and subcommands in the subcommands section, are sorted by their configured display order before rendering. The existing `clap_builder` help output already handles this correctly and can serve as a reference for the sort key logic.
+**Pre-Fix Commit:** 1d5c6798dc16db0b8130a0c73c8a5d818ec22131
+**Pre-Fix Commit Note:** Predates the tagged release by 553 commits. This is the state of the main branch immediately before the fix PR was merged. The bug is reproducible at this commit (default values are overwritten when `ignore_errors` is set and a "did you mean" suggestion is triggered). Agents work on the competition pinned commit for the codebase context, but fail-to-pass verification runs at this pre-fix commit.
+**Description:** When `ignore_errors(true)` is set on a command and an unknown argument triggers a "did you mean?" suggestion, the parser incorrectly calls `start_custom_arg` which sets the suggested argument's source to `CommandLine` instead of preserving `DefaultValue`. This means default values are overwritten even though the error is being ignored.
+**Verification:** `cargo test --test builder -- ignore_errors::did_you_mean`
+**Agent Instructions:** When a command has `ignore_errors(true)` and a user provides an unknown argument like `--ig` that triggers a "did you mean `--ignore-immutable`?" suggestion, the parser incorrectly fills in the suggested argument as if it were provided on the command line. After ignoring the error, the argument's value source should be `DefaultValue`, but it reports `CommandLine`. Fix the parser in `clap_builder/src/parser/parser.rs` to skip the `start_custom_arg` call in the "did you mean" handling when `ignore_errors` is set, so that the argument retains its default value and source.
 
 ---
 
@@ -29,16 +33,16 @@ closed GitHub issue with a linked fix PR that includes test changes (fail-to-pas
 
 **Codebase:** clap
 **Category:** bug-fix
-**Difficulty:** easy
-**GitHub Issue:** #6067 - Missing visible long flag aliases in help
-**Fix PR:** #6068
-**Affected Crate:** clap_builder
+**Difficulty:** medium
+**GitHub Issue:** #6130 - Completion keeps suggesting options (long/short) after an escape (`--`)
+**Fix PR:** #6131
+**Affected Crate:** clap_complete
 **Competition Pinned Commit:** 9ab6dee710aa384e02ec5e9e2cfeadb2f35abf2a (v4.6.0 tagged release; the competition baseline)
-**Pre-Fix Commit:** 7f164521b29e547cef396608246f977edbe3b616
-**Pre-Fix Commit Note:** Predates the tagged release by 302 commits. This is the state of the main branch immediately before the fix PR was merged. The bug is reproducible at this commit (long flag aliases are missing from help output). Agents work on the competition pinned commit for the codebase context, but fail-to-pass verification runs at this pre-fix commit.
-**Description:** When a subcommand has visible long flag aliases set via `visible_long_flag_alias()` or `visible_long_flag_aliases()`, the help output does not display them in the `[aliases: ...]` section. Only visible short flag aliases and regular visible aliases are shown, while visible long flag aliases are silently omitted.
-**Verification:** `cargo test -p clap_builder -- visible_aliases_with_short_help visible_aliases_with_long_help flag_subcommand_long_with_aliases_vis_and_hidden`
-**Agent Instructions:** The help output for subcommands with visible long flag aliases is incomplete. When a subcommand has `visible_long_flag_alias()` or `visible_long_flag_aliases()` configured, those aliases do not appear in the `[aliases: ...]` annotation in help output. Fix the help template rendering in `clap_builder/src/output/help_template.rs` so that visible long flag aliases are collected alongside visible short flag aliases and regular visible aliases, and included in the aliases display. Look at how `get_visible_short_flag_aliases()` is already used and add the equivalent handling for `get_visible_long_flag_aliases()`.
+**Pre-Fix Commit:** 281f8aec7ce468d677ae24bf5bc17d41e9c7cbcb
+**Pre-Fix Commit Note:** Predates the tagged release by 240 commits. This is the state of the main branch immediately before the fix PR was merged. The bug is reproducible at this commit (options are suggested after `--` in completions). Agents work on the competition pinned commit for the codebase context, but fail-to-pass verification runs at this pre-fix commit.
+**Description:** The dynamic completion engine continues to suggest options (like `--help`, `--delimiter`, etc.) after a `--` escape sequence. After `--`, only positional argument values should be suggested, not options. The `complete_arg` function does not track whether the parser has seen `--` and unconditionally calls `complete_option`.
+**Verification:** `cargo test -p clap_complete --features unstable-dynamic --test testsuite -- engine::suggest_subcommand_positional_after_escape`
+**Agent Instructions:** The dynamic completion engine in `clap_complete/src/engine/complete.rs` suggests options (e.g., `--help`) even after the user has typed `--` (the escape sequence that signals "no more options"). Fix the `complete_arg` function to accept an `is_escaped` parameter and skip calling `complete_option` when the parser is in escaped mode. The `is_escaped` state is already tracked in the `complete()` function's main loop; it needs to be passed through to `complete_arg`.
 
 ---
 
@@ -46,16 +50,16 @@ closed GitHub issue with a linked fix PR that includes test changes (fail-to-pas
 
 **Codebase:** clap
 **Category:** bug-fix
-**Difficulty:** medium
-**GitHub Issue:** #5040 - `value_terminator` has no effect when it is the first argument
-**Fix PR:** #6212
+**Difficulty:** easy
+**GitHub Issue:** #5860 - `ArgMatches::args_present` behaviour with `ArgAction::SetTrue`
+**Fix PR:** #5908
 **Affected Crate:** clap_builder
 **Competition Pinned Commit:** 9ab6dee710aa384e02ec5e9e2cfeadb2f35abf2a (v4.6.0 tagged release; the competition baseline)
-**Pre-Fix Commit:** b9009a76d1f2d62ba6af168bcef12ad7272626ca
-**Pre-Fix Commit Note:** Predates the tagged release by 73 commits. This is the state of the main branch immediately before the fix PR was merged. The bug is reproducible at this commit (value_terminator is ignored as first arg). Agents work on the competition pinned commit for the codebase context, but fail-to-pass verification runs at this pre-fix commit.
-**Description:** When `value_terminator` is set on a positional argument with `allow_hyphen_values(true)` and the terminator is passed as the very first argument (e.g., `program -- ls -l`), the parser treats the terminator as a regular value instead of terminating the argument's value collection. This causes subsequent positional arguments to receive no values.
-**Verification:** `cargo test -p clap_builder -- escape_as_value_terminator_with_empty_list`
-**Agent Instructions:** The `value_terminator` feature does not work correctly when the terminator string appears as the first argument to a positional. For example, given two positional args where the first has `value_terminator("--")` and `allow_hyphen_values(true)`, running `program -- ls -l` should result in the first arg getting no values and the second arg getting `["ls", "-l"]`. Instead, the parser enters trailing-values mode and assigns all values to the first arg. Fix the parser in `clap_builder/src/parser/parser.rs` to check for value terminators on the current positional argument before falling through to the trailing-values logic.
+**Pre-Fix Commit:** 190a3f225a851f7ee780abf7e0969b924443a8f4
+**Pre-Fix Commit Note:** Predates the tagged release by 501 commits. This is the state of the main branch immediately before the fix PR was merged. The bug is reproducible at this commit (`args_present()` returns true even when no args are provided). Agents work on the competition pinned commit for the codebase context, but fail-to-pass verification runs at this pre-fix commit.
+**Description:** `ArgMatches::args_present()` returns `true` even when no arguments are provided on the command line, because `SetTrue` action arguments are always added to the internal args map with a default value. The method checks `!self.args.is_empty()` which is true whenever any `SetTrue` arg is defined, regardless of whether the user actually provided it.
+**Verification:** `cargo test --test builder -- arg_matches::args_present_flag`
+**Agent Instructions:** `ArgMatches::args_present()` incorrectly returns `true` when a command has `SetTrue` flag arguments even if no arguments were provided by the user. The current implementation simply checks `!self.args.is_empty()`, but `SetTrue` arguments are always inserted into the map with their default value. Fix the `args_present()` method in `clap_builder/src/parser/matches/arg_matches.rs` to check whether any argument has an explicit value source (i.e., was actually provided by the user) rather than just checking if the args map is non-empty. You will need to add a `values()` method to the `FlatMap` utility in `clap_builder/src/util/flat_map.rs` to iterate over values.
 
 ---
 
@@ -64,15 +68,15 @@ closed GitHub issue with a linked fix PR that includes test changes (fail-to-pas
 **Codebase:** clap
 **Category:** bug-fix
 **Difficulty:** medium
-**GitHub Issue:** #6236 - Confusing `Usage: <...>` suggestion when using an argument together with an argument from a conflicting argument group
-**Fix PR:** #6237
+**GitHub Issue:** #6164 - Arg: `action(ArgAction::Count)` conflicts with `help_header` and other oddities causing panics and alarming memory usage
+**Fix PR:** #6165
 **Affected Crate:** clap_builder
 **Competition Pinned Commit:** 9ab6dee710aa384e02ec5e9e2cfeadb2f35abf2a (v4.6.0 tagged release; the competition baseline)
-**Pre-Fix Commit:** 2047862681cecd15562d86e4e30e3229073abf91
-**Pre-Fix Commit Note:** Predates the tagged release by 68 commits. This is the state of the main branch immediately before the fix PR was merged. The bug is reproducible at this commit (conflicting args from groups appear in usage). Agents work on the competition pinned commit for the codebase context, but fail-to-pass verification runs at this pre-fix commit.
-**Description:** When an argument conflicts with an argument group, the error message's `Usage:` line incorrectly includes the conflicting arguments from the group. For example, if `--conflict` conflicts with a group containing `--a` and `--b`, the usage should show only `prog --conflict` but instead shows both conflicting group members, which is confusing. Additionally, duplicate conflict IDs can appear when groups are expanded.
-**Verification:** `cargo test -p clap_builder -- conflict_with_group`
-**Agent Instructions:** When a conflict error is reported between an argument and an argument group, the error message displays a confusing usage line that includes the conflicting arguments rather than excluding them. The issue is in the conflict error building logic in `clap_builder/src/parser/validator.rs`. The `build_conflict_err` method expands group IDs into their member argument IDs but can produce duplicates because it does not deduplicate after expansion. Fix the method to collect the expanded conflict IDs into a `FlatSet` (for deduplication) before mapping them to display strings, and pass the deduplicated list to `build_conflict_err_usage`.
+**Pre-Fix Commit:** df7bdfc4996ba2f4388e2c01a6ab4cbe26b2e4df
+**Pre-Fix Commit Note:** Predates the tagged release by 186 commits. This is the state of the main branch immediately before the fix PR was merged. The bug is reproducible at this commit (incorrect help alignment for short-only arguments). Agents work on the competition pinned commit for the codebase context, but fail-to-pass verification runs at this pre-fix commit.
+**Description:** The help template incorrectly calculates the alignment padding for arguments that have only a short flag (no long flag). The `longest_filter` function excludes short-only non-value-taking args from the width calculation, and when computing the actual width for args that pass the filter, it unconditionally adds `SHORT_SIZE` padding as if a short flag prefix is always present. This results in extra whitespace in help output when short-only args are mixed with long args.
+**Verification:** `cargo test --test builder -- multiple_values::optional_value`
+**Agent Instructions:** The help output has incorrect alignment when a command has arguments with only short flags (no long flags). For example, `-p [<NUM>]` gets extra padding compared to `-h, --help`. The issue is in `clap_builder/src/output/help_template.rs` in the width calculation logic. The `longest_filter` function incorrectly excludes some args from the calculation, and the width computation adds `SHORT_SIZE` unconditionally based on `is_positional()` instead of checking `get_long().is_some()`. Remove the `longest_filter` function entirely and fix the width calculation to add `SHORT_SIZE` only when the argument has a long flag (since that implies a `--long, ` prefix is present), not merely when it is not positional.
 
 ---
 
@@ -81,12 +85,12 @@ closed GitHub issue with a linked fix PR that includes test changes (fail-to-pas
 **Codebase:** clap
 **Category:** bug-fix
 **Difficulty:** medium
-**GitHub Issue:** #6208 - Optional value to argument not handled correctly in the generated zsh completion script
-**Fix PR:** #6209
-**Affected Crate:** clap_complete
+**GitHub Issue:** #6275 - Shared global args with `ignore_errors = true` with `#[command(flatten)]` and subcommands breaks `--help`
+**Fix PR:** #6276
+**Affected Crate:** clap_builder
 **Competition Pinned Commit:** 9ab6dee710aa384e02ec5e9e2cfeadb2f35abf2a (v4.6.0 tagged release; the competition baseline)
-**Pre-Fix Commit:** 4ecbf54ac314b6cd9a84d7e48350b71f6bd4c7ac
-**Pre-Fix Commit Note:** Predates the tagged release by 126 commits. This is the state of the main branch immediately before the fix PR was merged. The bug is reproducible at this commit (zsh completions broken for optional-value args). Agents work on the competition pinned commit for the codebase context, but fail-to-pass verification runs at this pre-fix commit.
-**Description:** When an argument has an optional value (i.e., `num_args(0..=1)`), the generated zsh completion script produces an invalid completion specification. The `min_values()` returns 0, causing `vc.repeat(0)` to produce an empty string, which results in the argument being treated as a flag rather than an option that can accept a value.
-**Verification:** `cargo test -p clap_complete -- optional_value_option`
-**Agent Instructions:** The zsh shell completion generator in `clap_complete/src/aot/shells/zsh.rs` does not handle optional-value arguments correctly. When an argument is configured with `num_args(0..=1)` (optional value), the generated zsh completion spec calls `vc.repeat(min_values)` where `min_values` is 0, producing an empty string. This means the argument is treated as if it takes no value at all, breaking tab completion. Fix the `write_opts_of` function to handle the case where `min_values()` is 0 by emitting the value completion spec as an optional value (prefixed with `:`) instead of repeating it zero times.
+**Pre-Fix Commit:** d201a490f2f46013166d53d950a4d0e2ecbcaad9
+**Pre-Fix Commit Note:** Predates the tagged release by 35 commits. This is the state of the main branch immediately before the fix PR was merged. The bug is reproducible at this commit (`--help` in a subcommand is silently swallowed when `ignore_errors` is set). Agents work on the competition pinned commit for the codebase context, but fail-to-pass verification runs at this pre-fix commit.
+**Description:** When a command has `ignore_errors(true)` set and a subcommand is invoked with `--help`, the help output is not displayed. The parser's subcommand error handling checks `partial_parsing_enabled` and ignores ALL errors from subcommand parsing, including the special "display help" error (which is not a real error but a signal to print help and exit). This means `--help` is silently swallowed in subcommands.
+**Verification:** `cargo test --test builder -- ignore_errors::help_flag_subcommand`
+**Agent Instructions:** When `ignore_errors(true)` is set on a parent command, passing `--help` to a subcommand does not display help output. The parser silently ignores the help "error" (which is actually a display request, not a real error). Fix the subcommand error handling in `clap_builder/src/parser/parser.rs` in the `parse_subcommand` method. The condition that suppresses errors when `partial_parsing_enabled` is true should also check `error.use_stderr()` -- only suppress errors that would go to stderr (actual errors), not errors that go to stdout (like help and version display).
