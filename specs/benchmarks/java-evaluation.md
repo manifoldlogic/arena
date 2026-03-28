@@ -317,6 +317,8 @@ Lucene is the **most actively developed and institutionally stable** candidate w
 
 ---
 
+> **Data freshness notice:** GitHub metrics and community health data retrieved 2026-03-28. Verify current status before making onboarding decisions.
+
 ## Summary Comparison Table
 
 | Criterion              | google/gson | mockito/mockito | apache/lucene |
@@ -349,6 +351,8 @@ The differentiator is the balance of remaining criteria. Gson and mockito each h
 
 **Tiebreaker rationale** (gson vs. mockito, both at 2 Strong / 1 Weak): Gson wins on (a) codebase complexity (Strong vs. Adequate -- smaller is better for first onboarding), (b) validated task count (23 vs. 6 -- nearly 4x more tasks), and (c) SWE-bench dataset breadth (3 datasets vs. 1). Mockito's stronger test suite and issue history do not overcome these practical advantages for an initial onboarding decision.
 
+**Why gson over jackson-databind for first onboarding**: jackson-databind has a substantially larger validated task pool (~91 tasks vs. ~23 for gson), which makes it the stronger long-term benchmark candidate. However, gson's codebase is roughly one-third the size (~80K LoC estimated vs. 217.5K LoC for jackson-databind, with 261 files vs. 1,230 files), making it far more tractable for initial toolchain validation and agent feasibility testing. Both use Maven with straightforward build commands, so build complexity is comparable. Gson is preferred for first onboarding because it minimizes the variables when standing up Arena's Java pipeline for the first time; jackson-databind is the recommended first fallback once gson's task pool is exhausted (see [Alternative Candidates](#alternative-candidates)).
+
 ### 2nd Choice: mockito/mockito
 
 **Rationale**: Mockito is the second choice for Java benchmarking:
@@ -372,7 +376,7 @@ Lucene should be evaluated for onboarding after gson and mockito are established
 
 ### What If We Are Wrong
 
-- **If gson's ~23 tasks are exhausted quickly**: Pivot to jackson-databind (147 validated tasks). Jackson-databind was not a primary candidate in this evaluation's scope but has dramatically better task coverage. See [Alternative Candidates](#alternative-candidates).
+- **If gson's ~23 tasks are exhausted quickly**: Pivot to jackson-databind (~91 validated tasks). Jackson-databind was not a primary candidate in this evaluation's scope but has substantially better task coverage. See [Alternative Candidates](#alternative-candidates).
 - **If gson's maintenance mode leads to stale benchmarks**: Mockito (with ongoing development) or lucene (with Apache governance) provide repositories with active issue streams.
 - **If mockito's maintainer transition fails**: Defer mockito indefinitely. The combination of gson + jackson-databind covers the Java benchmark need without mockito.
 - **If lucene's codebase size is manageable in practice**: Promote lucene to second choice. Its issue depth and community health are the strongest among all candidates.
@@ -464,7 +468,7 @@ The three primary candidates collectively account for only 11 of the 128 Java in
 
 ### Context: SWE-bench-java-verified
 
-SWE-bench-java-verified contains 91 verified instances across 6 Java repositories (arXiv:2408.14354). Gson accounts for 9 of those 91 instances (9.9%). Neither mockito nor lucene is included in this dataset. The largest contributor is jackson-databind with 105 instances (this may include a broader scope than the 91 "verified" subset; the paper should be consulted for exact counts).
+SWE-bench-java-verified contains 91 verified instances across 6 Java repositories (arXiv:2408.14354). Gson accounts for 9 of those 91 instances (9.9%). Neither mockito nor lucene is included in this dataset. The largest contributor is jackson-databind with 49 instances (53.8% of the dataset), followed by jackson-core, jackson-dataformat-xml, jib, and dubbo (arXiv:2408.14354, Table 1).
 
 ---
 
@@ -483,12 +487,14 @@ The following repositories were not selected as primary candidates for this eval
 | Build System                      | Maven                                          | GitHub README                                                                   |
 | JDK Requirement                   | Java 8+ (Jackson 2.13+); JDK 17+ (Jackson 3.0) | Web search                                                                      |
 | Multi-SWE-bench Instances         | 42                                             | arXiv:2504.02605v1, Table 1                                                     |
-| SWE-bench-java-verified Instances | 105                                            | arXiv:2408.14354                                                                |
+| SWE-bench-java-verified Instances | 49                                             | arXiv:2408.14354, Table 1 (49 of 91 verified instances)                         |
 | SWE-bench Multilingual Instances  | 0 (not included)                               | swebench.com/multilingual.html                                                  |
-| **Total validated tasks**         | **~147**                                       | Union across datasets; overlap likely between Multi-SWE-bench and java-verified |
+| **Total validated tasks**         | **~91**                                        | Union across datasets; overlap likely between Multi-SWE-bench and java-verified |
 | Codebase Size                     | 1,230 files, 217.5K LoC                        | Multi-SWE-bench Table 1, arXiv:2504.02605v1                                     |
 
-**Why not selected as primary**: jackson-databind was not in the original evaluation scope (the epic specified gson, mockito, and lucene as primary candidates). However, jackson-databind has the **strongest validated task count of any Java repository**: 42 Multi-SWE-bench + 105 SWE-bench-java-verified = ~147 tasks (with overlap). Its 105 SWE-bench-java-verified instances represent 53.8% of that entire dataset (arXiv:2408.14354). The moderate codebase (217.5K LoC), mainstream build (Maven), and standard JDK requirements make it a strong candidate.
+**Why not selected as primary**: jackson-databind was not in the original evaluation scope (the epic specified gson, mockito, and lucene as primary candidates). However, jackson-databind has the **strongest validated task count of any Java repository**: 42 Multi-SWE-bench + 49 SWE-bench-java-verified = ~91 tasks (with overlap). Its 49 SWE-bench-java-verified instances represent 53.8% of that dataset's 91 verified instances (arXiv:2408.14354, Table 1). The moderate codebase (217.5K LoC), mainstream build (Maven), and standard JDK requirements make it a strong candidate.
+
+**Data correction**: An earlier version of this document cited 105 SWE-bench-java-verified instances for jackson-databind. The 105 figure was misread from the "Gold Patch #Files" column (average files modified per patch) in arXiv:2408.14354, Table 1. The correct instance count is 49.
 
 **Recommendation**: jackson-databind should be the **first fallback** if gson's ~23 tasks prove insufficient. It arguably has better benchmark suitability than any of the three primary candidates on the Validated Task Count criterion alone.
 
@@ -503,12 +509,12 @@ The following repositories were not selected as primary candidates for this eval
 | Build System                      | Maven                                             | Web search                                  |
 | JDK Requirement                   | Java 8+ (Dubbo 3.x); JDK 17+ (with Spring Boot 3) | Web search                                  |
 | Multi-SWE-bench Instances         | 3                                                 | arXiv:2504.02605v1, Table 1                 |
-| SWE-bench-java-verified Instances | 12                                                | arXiv:2408.14354                            |
+| SWE-bench-java-verified Instances | 4                                                 | HuggingFace Daoguang/Multi-SWE-bench swe-bench-java-verified.json |
 | SWE-bench Multilingual Instances  | 0 (not included)                                  | swebench.com/multilingual.html              |
-| **Total validated tasks**         | **~15**                                           | Union across datasets                       |
+| **Total validated tasks**         | **~7**                                            | Union across datasets                       |
 | Codebase Size                     | 3,939 files, 402.1K LoC                           | Multi-SWE-bench Table 1, arXiv:2504.02605v1 |
 
-**Why not selected as primary**: Despite being the highest-starred Java repo in this analysis (41.7K stars), dubbo has only ~15 validated tasks. The planning document incorrectly cited "3,939 instances" -- this was the file count, not the instance count (actual: 3 Multi-SWE-bench instances). The large codebase (402K LoC) and complex RPC/microservice deployment requirements make it less suitable for isolated benchmark tasks than simpler library repos.
+**Why not selected as primary**: Despite being the highest-starred Java repo in this analysis (41.7K stars), dubbo has only ~7 validated tasks. The planning document incorrectly cited "3,939 instances" -- this was the file count, not the instance count (actual: 3 Multi-SWE-bench instances). The large codebase (402K LoC) and complex RPC/microservice deployment requirements make it less suitable for isolated benchmark tasks than simpler library repos.
 
 **Assessment**: Not recommended. Low task count despite high stars, complex deployment model, and large codebase.
 
@@ -516,15 +522,17 @@ The following repositories were not selected as primary candidates for this eval
 
 | Repository                       | Multi-SWE-bench | SWE-bench-java-verified | Total | Codebase              | Build              | Notes                                       |
 | -------------------------------- | --------------- | ----------------------- | ----- | --------------------- | ------------------ | ------------------------------------------- |
-| FasterXML/jackson-core           | 18              | 58                      | ~76   | 366 files, 105.7K LoC | Maven              | Jackson core module; strong task count      |
+| FasterXML/jackson-core           | 18              | 23                      | ~41   | 366 files, 105.7K LoC | Maven              | Jackson core module; strong task count      |
 | elastic/logstash                 | 38              | 0                       | 38    | 562 files, 59.9K LoC  | Mixed (JRuby/Java) | Complex polyglot deployment                 |
-| FasterXML/jackson-dataformat-xml | 5               | 16                      | ~21   | 206 files             | Maven              | Jackson XML format module                   |
-| GoogleContainerTools/jib         | 5               | 13                      | ~18   | 604 files             | Gradle             | Container image builder                     |
+| FasterXML/jackson-dataformat-xml | 5               | 5                       | ~10   | 206 files             | Maven              | Jackson XML format module                   |
+| GoogleContainerTools/jib         | 5               | 5                       | ~10   | 604 files             | Gradle             | Container image builder                     |
 | alibaba/fastjson2                | 6               | 0                       | 6     | 424 files, 443.8K LoC | Maven              | JSON library; large codebase for task count |
 
-Sources: arXiv:2504.02605v1 Table 1 (Multi-SWE-bench); arXiv:2408.14354 (SWE-bench-java-verified).
+Sources: arXiv:2504.02605v1 Table 1 (Multi-SWE-bench); HuggingFace Daoguang/Multi-SWE-bench swe-bench-java-verified.json (SWE-bench-java-verified per-repo counts).
 
-**Key observation**: The Jackson ecosystem (jackson-databind + jackson-core + jackson-dataformat-xml) collectively has approximately 65 Multi-SWE-bench instances and 179 SWE-bench-java-verified instances -- dramatically more than any individual primary candidate. If Arena's priority is maximizing validated task coverage, the Jackson family of repositories is the strongest choice in the Java ecosystem.
+**Data correction**: Earlier SWE-bench-java-verified per-repo counts (jackson-core 58, jackson-dataformat-xml 16, jib 13, dubbo 12) were misread from the "Gold Patch #Files" column of arXiv:2408.14354 Table 1. Corrected counts above are from the authoritative dataset file (91 instances total: jackson-databind 49, jackson-core 23, jackson-dataformat-xml 5, gson 5, jib 5, dubbo 4).
+
+**Key observation**: The Jackson ecosystem (jackson-databind + jackson-core + jackson-dataformat-xml) collectively has approximately 65 Multi-SWE-bench instances and 77 SWE-bench-java-verified instances -- substantially more than any individual primary candidate. If Arena's priority is maximizing validated task coverage, the Jackson family of repositories is the strongest choice in the Java ecosystem.
 
 ---
 
