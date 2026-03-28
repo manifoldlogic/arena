@@ -227,7 +227,7 @@ scores are consistent when compared side-by-side.
 The judge prompt adapts process log presentation based on fidelity level:
 
 - **Structured logs:** Presented in full (up to 2000 tokens). Events include typed tool calls, edits, and reasoning steps. The judge evaluates the complete diagnostic narrative.
-- **Semi-structured (text) logs:** Summarized to approximately 500 words with action markers preserved (edit blocks, file references, test invocations). The judge evaluates based on discernible actions and stated reasoning.
+- **Semi-structured (text) logs:** Summarized to approximately 500 words with action markers preserved (edit blocks, file references, test invocations). The judge evaluates based on discernible actions and stated reasoning. The summarization step is a DISC-03/DISC-04 implementation responsibility. The scoring pipeline or judge prompt builder performs this summarization before prompt construction.
 - **Minimal / diff-only logs:** Noted as "process log unavailable -- scoring from diff only." The judge scores process quality based solely on what can be inferred from the diff and test results.
 
 ### Judge Model Disclosure
@@ -257,6 +257,8 @@ For a log to qualify as `structured` or `semi-structured`, it MUST contain at mi
 - Temporal ordering (events are in chronological sequence).
 
 A log that contains only the final diff is classified as `minimal` regardless of its format.
+
+A log that begins with structured JSON events but terminates abruptly (e.g., due to harness crash) is classified at the highest fidelity level for which it provides complete, parseable evidence. If fewer than the minimum viable process log requirements can be extracted, it degrades to `minimal`.
 
 ### Degradation Rules
 
