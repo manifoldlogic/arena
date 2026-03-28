@@ -16,12 +16,12 @@ Where the search competition asks "Can the agent find and explain?", the bug-fix
 
 Each bug-fix task provides the competitor with:
 
-| Artifact              | Description                                                                                                                                           |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Issue description** | A natural-language bug report: observed behavior, expected behavior, and reproduction context.                                                        |
-| **Failing test(s)**   | One or more named test functions that fail on the pinned commit and that a correct fix must make pass. Follows the SWE-bench fail-to-pass convention. |
-| **Pinned commit**     | The exact commit SHA in the target codebase at which the bug is reproducible.                                                                         |
-| **Codebase**          | The repository (from `codebases/`) in which the fix must be applied.                                                                                  |
+| Artifact              | Description                                                                                                                                                                                                                                                                                                                  |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Issue description** | A natural-language bug report: observed behavior, expected behavior, and reproduction context.                                                                                                                                                                                                                               |
+| **Failing test(s)**   | One or more named test functions that fail on the pinned commit and that a correct fix must make pass. Follows the SWE-bench fail-to-pass convention. When multiple failing tests are specified, they are joined with `;` as the delimiter (matching the `failing_test` field in `specs/schemas/discovery-round-schema.md`). |
+| **Pinned commit**     | The exact commit SHA in the target codebase at which the bug is reproducible.                                                                                                                                                                                                                                                |
+| **Codebase**          | The repository (from `codebases/`) in which the fix must be applied.                                                                                                                                                                                                                                                         |
 
 ### What Competitors Must Discover
 
@@ -59,7 +59,7 @@ Bug-fix rounds are scored on **4 dimensions**: 1 binary correctness check, 2 jud
 #### Automated Verification Protocol
 
 1. Apply the competitor's patch to the codebase at the pinned commit.
-2. Run the full test suite (or the designated test subset if a full run exceeds 10 minutes).
+2. Run the full test suite (or the designated test subset if a full run exceeds 10 minutes). The method for designating a test subset is a DISC-04 implementation responsibility.
 3. Check the named failing test(s):
    - If ALL named failing tests now pass AND no previously-passing tests regress: **correctness = 1**.
    - Otherwise: **correctness = 0**.
@@ -76,6 +76,7 @@ If a competitor exceeds its time or tool-call budget:
 - Run the verification protocol as normal.
 - Record `budget_exceeded: true` on the round result.
 - Correctness is **NOT** automatically 0. If the partial patch happens to fix the bug, the competitor receives correctness = 1.
+- If the partial diff produced at timeout fails to apply cleanly to the pinned commit, correctness = 0.
 
 ### Process Quality (Judged 1-5)
 

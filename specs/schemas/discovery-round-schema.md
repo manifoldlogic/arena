@@ -79,6 +79,8 @@ If two `source="score"` entries exist for the same `(round_id, competitor)` pair
 | `judge_notes`          | string | Optional                      | Free text or `null`                                        | Judge's commentary on the comparative evaluation.                                                                                                                                                                        |
 | `difficulty_tier`      | string | Optional                      | Enum: `"localized"` \| `"cross-cutting"` \| `"subtle"`     | Difficulty classification of the bug-fix task. See `specs/competition-types/bug-fix.md` for tier definitions.                                                                                                            |
 
+> **Note:** The composite score is computed per the formula in `specs/competition-types/bug-fix.md` and is not stored directly in JSONL. It is a derived value calculated by downstream tools.
+
 ---
 
 ## Nullable / Optional Rules Summary
