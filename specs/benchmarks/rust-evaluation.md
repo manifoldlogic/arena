@@ -103,7 +103,9 @@ tokio has the most comprehensive CI of the four candidates, with a 45KB `ci.yml`
 
 **Rating: Adequate**
 
-tokio has 7 workflow files, with the primary `ci.yml` at 44,953 bytes -- a very large and comprehensive configuration. The build matrix spans 5 OS targets (Ubuntu, Ubuntu-ARM, Windows, Windows-ARM, macOS) plus WASM. It requires Rust stable, nightly, and an MSRV of 1.71. Special testing modes (Loom, Miri, ASAN, Valgrind) each introduce their own toolchain requirements. Additional workflows include loom, stress-test, and io-uring kernel version testing. The sheer breadth of the CI makes full reproduction costly, though a subset targeting stable Rust on Linux would be feasible for initial benchmark onboarding.
+tokio has 7 workflow files, with the primary `ci.yml` at 44,953 bytes -- a very large and comprehensive configuration. The build matrix spans 5 OS targets (Ubuntu, Ubuntu-ARM, Windows, Windows-ARM, macOS) plus WASM. It requires Rust stable, nightly, and an MSRV of 1.71. Special testing modes (Loom, Miri, ASAN, Valgrind) each introduce their own toolchain requirements. Additional workflows include loom, stress-test, and io-uring kernel version testing. The sheer breadth of the CI makes full reproduction costly, though a subset targeting stable Rust on Linux would be feasible for initial benchmark onboarding. Specifically, the initial onboarding suite should exclude: Loom concurrency tests (require special `RUSTFLAGS` compilation with the `loom` cfg flag), Miri tests (require a pinned nightly toolchain), io-uring tests (require elevated Linux permissions; see note below), WASM targets, and Valgrind/ASAN runs (require external sanitizer tooling). The remaining stable-Rust-on-Linux tests provide sufficient coverage for benchmark task validation without these environment-specific dependencies.
+
+**io-uring note:** The `tokio-uring` tests require elevated Linux permissions (`CAP_SYS_ADMIN` or equivalent) to access the `io_uring` kernel interface. In devcontainer and other sandboxed environments, these tests may fail unexpectedly or be silently skipped due to restricted capabilities. These tests should be excluded from the initial onboarding suite and only re-enabled in environments where elevated permissions are explicitly configured.
 
 #### Criterion 3: Issue History Depth
 
@@ -250,7 +252,7 @@ With only 7 validated tasks and zero representation in the primary Multi-SWE-ben
 
 **Rating: Strong**
 
-ruff's approximately 57 workspace crates (28 ruff*\* crates, approximately 14 ty*\* crates, and others) make it the most modular codebase among the candidates. The project is one of the largest Rust codebases on GitHub, though exact file and LOC counts are unavailable since ruff is absent from Multi-SWE-bench. The linting/formatting domain involves AST traversal, rule implementation, fix generation, and Python type checking -- tasks that require agents to navigate complex cross-crate dependencies. The Rust-implementing-Python-tooling nature adds an additional layer of domain complexity.
+ruff's approximately 57 workspace crates (28 ruff*\* crates, approximately 14 ty*\* crates, and others) make it the most modular codebase among the candidates. The project is one of the largest Rust codebases on GitHub: the GitHub Languages API reports approximately 21.1 million bytes of Rust source (~21.1 MB), which corresponds to an estimated 600k--800k lines of Rust at typical line lengths (per GitHub code statistics, api.github.com/repos/astral-sh/ruff/languages, March 2026). This makes ruff roughly 2--3x larger than nushell (264.2k LOC) and the largest codebase among the four candidates by a wide margin, though exact file and LOC counts comparable to the Multi-SWE-bench figures for other candidates are unavailable since ruff is absent from that dataset. The linting/formatting domain involves AST traversal, rule implementation, fix generation, and Python type checking -- tasks that require agents to navigate complex cross-crate dependencies. The Rust-implementing-Python-tooling nature adds an additional layer of domain complexity.
 
 #### Criterion 6: Community Health
 
@@ -268,6 +270,48 @@ ruff demonstrates the strongest community health indicators of all candidates (a
 | Validated Task Count   | Weak     |
 | Codebase Complexity    | Strong   |
 | Community Health       | Strong   |
+
+---
+
+## Cross-Candidate Comparison
+
+The tables below consolidate key metrics from the per-candidate evaluations into side-by-side views for quick reference. All figures are drawn from the candidate sections above.
+
+### SWE-bench Participation
+
+| Repo            | Multi-SWE-bench Instances | SWE-bench Multilingual Tasks | Combined Total |
+| --------------- | ------------------------- | ---------------------------: | -------------: |
+| clap-rs/clap    | **132**                   |                   0 (absent) |            132 |
+| tokio-rs/tokio  | 25                        |                            9 |             34 |
+| nushell/nushell | 14                        |                            5 |             19 |
+| astral-sh/ruff  | 0 (absent)                |                            7 |              7 |
+
+### GitHub Statistics (as of 2026-03-28)
+
+| Repo            |  Stars | Contributors | Open Issues+PRs | Age        |
+| --------------- | -----: | -----------: | --------------: | ---------- |
+| clap-rs/clap    | 16,252 |         ~588 |             422 | 11 years   |
+| tokio-rs/tokio  | 31,495 |       ~1,021 |             404 | ~9.5 years |
+| nushell/nushell | 38,847 |         ~858 |           1,476 | ~7 years   |
+| astral-sh/ruff  | 46,733 |         ~844 |           1,930 | ~3.5 years |
+
+### Codebase Scale
+
+| Repo            | Workspace Crates | Files |    LOC |
+| --------------- | :--------------: | ----: | -----: |
+| clap-rs/clap    |        7         |   321 |  70.4k |
+| tokio-rs/tokio  |   5+5 internal   |   727 | 141.5k |
+| nushell/nushell |       ~38        | 1,479 | 264.2k |
+| astral-sh/ruff  |       ~57        |   N/A |    N/A |
+
+### CI Maturity
+
+| Repo            | Workflow Files | Primary CI Size | OS Coverage | Special Testing                        |
+| --------------- | :------------: | --------------: | ----------- | -------------------------------------- |
+| clap-rs/clap    |       10       |           7.5KB | 3 OS + WASM | MSRV, coverage                         |
+| tokio-rs/tokio  |       7        |            45KB | 5 OS + WASM | Loom, Miri, ASAN, Valgrind             |
+| nushell/nushell |       15       |           7.3KB | 3 OS + WASM | Plugin tests, nightly builds           |
+| astral-sh/ruff  |       19       |          46.7KB | 4 OS + WASM | Fuzzing, ecosystem, typing conformance |
 
 ---
 
@@ -330,3 +374,4 @@ The corrected Multi-SWE-bench instance counts (clap: 132, tokio: 25, nushell: 14
 - **No live builds were performed.** All CI and test suite assessments are based on GitHub Actions data (workflow configurations, recent run statuses, and CI badge states) rather than local build reproduction.
 - **ARENA-45 status:** The toolchain-verification-report.md from ARENA-45 was not yet available at the time of this evaluation. clap CI Reproducibility and Test Suite Reliability assessments rely on GitHub CI data. If ARENA-45 produces findings that contradict this evaluation, those should be reconciled before finalizing onboarding decisions.
 - **Multi-SWE-bench data correction:** The ARENA-49 planning documents contained a systematic error, reading the #Files column of Multi-SWE-bench Table 1 as instance counts. This evaluation uses the corrected #Num (instance count) figures: clap 132, tokio 25, nushell 14. The discrepancy has been flagged for escalation to ARENA-DISC.
+- **Instance Count Verification (ARENA-49.3001, 2026-03-28):** Figures independently verified against arxiv:2504.02605 Table 1, #Num column. Values confirmed: clap-rs/clap = 132, tokio-rs/tokio = 25, nushell/nushell = 14. All three values match the figures used in this evaluation. Additionally confirmed: astral-sh/ruff is absent from Table 1 (not among the 10 Rust repositories in Multi-SWE-bench), consistent with this evaluation's recording of 0 Multi-SWE-bench instances for ruff. The complete set of Rust repos in Table 1 comprises: BurntSushi/ripgrep (14), clap-rs/clap (132), nushell/nushell (14), rayon-rs/rayon (2), serde-rs/serde (2), sharkdp/bat (10), sharkdp/fd (14), tokio-rs/bytes (5), tokio-rs/tokio (25), tokio-rs/tracing (21).
