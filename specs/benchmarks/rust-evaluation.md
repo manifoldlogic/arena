@@ -252,7 +252,7 @@ With only 7 validated tasks and zero representation in the primary Multi-SWE-ben
 
 **Rating: Strong**
 
-ruff's approximately 57 workspace crates (28 ruff*\* crates, approximately 14 ty*\* crates, and others) make it the most modular codebase among the candidates. The project is one of the largest Rust codebases on GitHub: the GitHub Languages API reports approximately 21.1 million bytes of Rust source (~21.1 MB), which corresponds to an estimated 600k--800k lines of Rust at typical line lengths (per GitHub code statistics, api.github.com/repos/astral-sh/ruff/languages, March 2026). This makes ruff roughly 2--3x larger than nushell (264.2k LOC) and the largest codebase among the four candidates by a wide margin, though exact file and LOC counts comparable to the Multi-SWE-bench figures for other candidates are unavailable since ruff is absent from that dataset. The linting/formatting domain involves AST traversal, rule implementation, fix generation, and Python type checking -- tasks that require agents to navigate complex cross-crate dependencies. The Rust-implementing-Python-tooling nature adds an additional layer of domain complexity.
+ruff's approximately 57 workspace crates (28 `ruff_*` crates, approximately 14 `ty_*` crates, and others) make it the most modular codebase among the candidates. The project is one of the largest Rust codebases on GitHub: the GitHub Languages API reports approximately 21.1 million bytes of Rust source (~21.1 MB), which corresponds to an estimated 600k--800k lines of Rust at typical line lengths (per GitHub code statistics, api.github.com/repos/astral-sh/ruff/languages, March 2026). This makes ruff roughly 2--3x larger than nushell (264.2k LOC) and the largest codebase among the four candidates by a wide margin, though exact file and LOC counts comparable to the Multi-SWE-bench figures for other candidates are unavailable since ruff is absent from that dataset. The linting/formatting domain involves AST traversal, rule implementation, fix generation, and Python type checking -- tasks that require agents to navigate complex cross-crate dependencies. The Rust-implementing-Python-tooling nature adds an additional layer of domain complexity.
 
 #### Criterion 6: Community Health
 
@@ -367,7 +367,7 @@ The corrected Multi-SWE-bench instance counts (clap: 132, tokio: 25, nushell: 14
 - **Data collection date:** 2026-03-28
 - **Sources used:**
   - GitHub REST API (`https://api.github.com/repos/{owner}/{repo}`) -- repository statistics, CI workflow metadata
-  - GitHub Actions API (`https://api.github.com/repos/{owner}/{repo}/actions/workflows/ci.yml/runs`) -- recent CI run status
+  - GitHub Actions API (`https://api.github.com/repos/{owner}/{repo}/actions/workflows`) to enumerate workflows, then `https://api.github.com/repos/{owner}/{repo}/actions/workflows/{workflow_id}/runs` for recent CI run status (use the repository's actual primary CI workflow file, e.g., `ci.yml` or `ci.yaml`)
   - Multi-SWE-bench Dataset (HuggingFace): https://huggingface.co/datasets/ByteDance-Seed/Multi-SWE-bench -- instance counts, file counts, LOC
   - Multi-SWE-bench Paper (Table 1): https://arxiv.org/html/2504.02605v1 -- per-repo statistics
   - SWE-bench Multilingual: https://www.swebench.com/multilingual.html -- task counts per repo
