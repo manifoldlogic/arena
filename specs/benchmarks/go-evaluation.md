@@ -20,7 +20,7 @@ Each repository is assessed on six criteria:
 | Criterion | Definition |
 |---|---|
 | **Test Suite Reliability** | Quality of test isolation, mock infrastructure, test file coverage ratio, and evidence of tests running without external dependencies |
-| **CI Reproducibility** | Ability to reproduce the CI test pipeline locally using standard Go tooling without proprietary runners, secrets, or non-standard infrastructure |
+| **CI Reproducibility** | Ability to reproduce the CI test pipeline locally using standard Go tooling without proprietary runners, secrets, or non-standard infrastructure. CI Reproducibility ratings are assessed from CI configuration inspection and published test infrastructure documentation; live `go test ./...` verification is deferred to repository onboarding. |
 | **Issue History Depth** | Volume and longevity of closed issues as a proxy for the repository's capacity to generate meaningful benchmark tasks |
 | **Validated Task Count** | Number of validated task instances available in SWE-bench datasets (Multi-SWE-bench or SWE-bench Multilingual), representing the pool of tasks usable in Arena competitions |
 | **Codebase Complexity** | Repository size, package depth, architectural patterns, and domain specialization — indicating the breadth and difficulty of tasks an agent must handle |
@@ -40,6 +40,14 @@ Each repository is assessed on six criteria:
 | Adequate | 50 -- 499 validated instances |
 | Weak | < 50 validated instances |
 
+### Issue History Depth Thresholds
+
+| Rating | Closed Issue Count |
+|---|---|
+| Strong | 1,000+ closed issues |
+| Adequate | 200–999 closed issues |
+| Weak | Fewer than 200 closed issues |
+
 ### SWE-bench Coverage Gap
 
 Two distinct SWE-bench datasets cover Go repositories, creating a two-tier evaluation:
@@ -50,6 +58,8 @@ Two distinct SWE-bench datasets cover Go repositories, creating a two-tier evalu
 This asymmetry means the four candidates were validated through different pipelines. Repositories in Multi-SWE-bench have undergone a more extensive validation process (the paper reports 428 total Go instances across three repos). Repositories in SWE-bench Multilingual have smaller instance sets that have not been cross-validated against the Multi-SWE-bench methodology. This difference is noted in per-repo assessments but does not change the rating scale.
 
 **Important correction**: The numbers 737 (cli/cli) and 981 (grpc/grpc-go) appearing in some planning documents are **file counts** from the #Files column of Multi-SWE-bench Table 1, not validated instance counts. The actual validated instance counts (#Num column) are 397 and 16, respectively.
+
+This evaluation is considered current for 12 months from collection date (2026-03-28) or until Multi-SWE-bench releases a major Go dataset update, whichever comes first.
 
 ---
 
@@ -138,7 +148,7 @@ This asymmetry means the four candidates were validated through different pipeli
 - 20+ mock files throughout the codebase (mock API clients, mock prompters, mock verifiers) -- systematic test isolation (Source: GitHub Trees API, 2026-03-28)
 - Standard test command: `go test ./...` via Makefile -- no custom test harness
 - Separate `acceptance` test suite (build tag `acceptance`) isolates integration tests from unit tests
-- High A2P2P count: 1,997.0 average pass-to-pass tests per instance, confirming extensive test coverage (Source: Table 1, arXiv 2504.02605)
+- High A2P2P count: 1,997.0 average pass-to-pass tests per instance, confirming extensive test coverage. A2P2P (average number of tests passing before a patch that also pass after) measures regression-catching capacity. (Source: Table 1, arXiv 2504.02605)
 - No external service dependencies in unit test paths; mocks cover GitHub API, codespace RPC, and attestation verification
 
 #### CI Reproducibility: Strong
