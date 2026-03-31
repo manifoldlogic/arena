@@ -12,6 +12,31 @@ the bug), then the full fix PR is applied, confirmed to PASS.
 
 ---
 
+> **Operator Note — Shallow Submodule Limitation**
+>
+> The `codebases/clap/` submodule is configured as a shallow clone (`shallow = true` in `.gitmodules`).
+> Only the competition pinned commit (9ab6dee / v4.6.0) is present in the shallow clone.
+> DISC-04 fail-to-pass verification requires checking out each task's **Pre-Fix Commit**,
+> which is between 35 and 553 commits before the pinned commit. These earlier commits
+> are **not available** in the shallow clone, so `git checkout <pre-fix-commit>` will fail.
+>
+> **Option 1 — Unshallow the existing submodule:**
+>
+> ```bash
+> git -C codebases/clap fetch --unshallow
+> ```
+>
+> **Option 2 — Clone the full repository separately:**
+>
+> ```bash
+> git clone https://github.com/clap-rs/clap.git /tmp/clap-full
+> git -C /tmp/clap-full checkout <pre-fix-commit>
+> ```
+>
+> The `deliverables/fail-to-pass-verification-report.md` used Option 2 (via `/tmp/clap-replace`).
+
+---
+
 ## clap-bug-fix-1
 
 **Codebase:** clap
