@@ -14,6 +14,7 @@ This is a **discovery-only configuration**. It is not integrated into the main `
 
 - Python 3.10 or higher
 - [uv](https://github.com/astral-sh/uv) package manager
+- `jq` — JSON construction in `aider-runner.sh` (standard in most Linux environments; install with `apt-get install jq` or `brew install jq`)
 - `ANTHROPIC_API_KEY` environment variable set (required for Claude model access)
 - `OPENAI_API_KEY` environment variable set (optional, only if using OpenAI models)
 
@@ -59,15 +60,33 @@ scripts/harness/aider-runner.sh \
 
 The `--edit-format diff` flag is always passed explicitly to ensure parseable output. This is not a configurable placeholder.
 
+> **Note:** `aider-runner.sh` resolves the Aider binary using a relative path by default. The script must be invoked from the repository root for this path to resolve correctly. If invoking from a different working directory, set `AIDER_BIN` to an absolute path:
+>
+> ```sh
+> AIDER_BIN=/absolute/path/to/.venv/bin/aider scripts/harness/aider-runner.sh ...
+> ```
+
+### Post-Processing
+
+After `aider-runner.sh` completes, run `parse-aider-log.py` on the output to produce a structured log artifact:
+
+```sh
+python scripts/harness/parse-aider-log.py \
+  --input "$OUTPUT_DIR/llm-history.txt" \
+  --output "$OUTPUT_DIR/parsed-log.json"
+```
+
+The resulting `parsed-log.json` is the structured artifact consumed by the scoring pipeline.
+
 ## Known Issues
 
-### Issue #3903: `--yes-always` Shell Command Auto-Confirmation
+### Issue #3903: `--yes-always` and Shell Commands
 
-Aider's `--yes-always` flag, which is needed for non-interactive automated runs, also auto-confirms shell command execution without any sandboxing. This means aider can execute arbitrary shell commands suggested by the LLM without human review.
+Aider's `--yes-always` flag, which is needed for non-interactive automated runs, does **not** auto-approve shell commands. Shell commands suggested by the LLM are silently skipped. Stdin redirection from `/dev/null` in the harness runner provides a belt-and-suspenders guard against interactive hangs.
 
 **Status:** Open upstream (https://github.com/Aider-AI/aider/issues/3903)
 
-**Workaround:** The harness runner script must implement its own sandboxing or run aider in a restricted environment (container, limited user permissions) to mitigate this risk. See the aider-runner.sh script (ARENA-46.1003) for the containment approach.
+**Mitigation:** The harness runner redirects stdin from `/dev/null` as an additional guard against unexpected interactive prompts. See the aider-runner.sh script (ARENA-46.2001) for details.
 
 ### Text-Based LLM History
 
