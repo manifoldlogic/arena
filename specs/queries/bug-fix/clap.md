@@ -37,6 +37,20 @@ the bug), then the full fix PR is applied, confirmed to PASS.
 
 ---
 
+> **Build Requirements — Non-Default Feature Flags**
+>
+> Some tasks in this file require Cargo feature flags that are **not enabled by default**.
+> DISC-04 operators must pass these flags explicitly or the verification command will
+> fail to exercise the correct code path (tests may silently pass with 0 tests run).
+>
+> | Task | Feature Flag | Cargo Invocation | Reason |
+> |------|-------------|-----------------|--------|
+> | clap-bug-fix-2 | `unstable-dynamic` | `cargo test -p clap_complete --features unstable-dynamic --test testsuite -- engine::suggest_subcommand_positional_after_escape` | The dynamic completion engine (`clap_complete/src/engine/`) is gated behind the `unstable-dynamic` feature. Without this flag, the `engine` test module is not compiled and the test filter matches zero tests, producing a misleading exit code 0. |
+>
+> Always check each task's **Verification** command for `--features` flags before running.
+
+---
+
 ## clap-bug-fix-1
 
 **Codebase:** clap
