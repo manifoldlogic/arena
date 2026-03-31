@@ -5,7 +5,10 @@ closed GitHub issue with a linked fix PR that includes test changes (fail-to-pas
 
 All tasks have been verified using the SWE-bench fail-to-pass methodology: the test
 changes from the fix PR are applied at the pre-fix commit, confirmed to FAIL (demonstrating
-the bug), then the full fix PR is applied, confirmed to PASS.
+the bug), then the full fix PR is applied, confirmed to PASS. Each task's **Pre-Fix Commit**
+and **Verification** fields are required by this methodology — the pre-fix commit pins a
+known-buggy state so the failing test is reproducible, and the verification command confirms
+that an agent's fix causes the test to pass.
 
 **Areas covered:** Parser (A-parsing), Help display (A-help), Shell completion engine (A-completion)
 **Difficulty mix:** 2 easy, 3 medium
