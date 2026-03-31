@@ -16,7 +16,7 @@ git submodule update --init --recursive
 
 # Verify each expected submodule
 FAILED=0
-for dir in codebases/django codebases/fastapi codebases/mattermost-webapp; do
+for dir in codebases/django codebases/fastapi codebases/mattermost-webapp codebases/clap; do
     if [ -d "$dir/.git" ] || [ -f "$dir/.git" ]; then
         SHA=$(git -C "$dir" rev-parse --short HEAD)
         echo "  OK: $dir ($SHA)"
