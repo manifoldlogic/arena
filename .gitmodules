@@ -13,4 +13,3 @@
 [submodule "codebases/clap"]
 	path = codebases/clap
 	url = https://github.com/clap-rs/clap
-	shallow = true
