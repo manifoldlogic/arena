@@ -12,6 +12,8 @@
 #   MOCK_AIDER_STDERR      Write this string to stderr before exiting
 #   MOCK_AIDER_MODIFY_FILE If set, write a trivial change to this file path
 #                          (enables git diff testing)
+#   MOCK_AIDER_INVOCATION_LOG  If set, write each argument on its own line to
+#                              this file path (enables argument inspection)
 #
 # =============================================================================
 
@@ -21,6 +23,13 @@ LLM_HISTORY_FILE=""
 if [ "${1:-}" = "--version" ]; then
     printf "aider 0.42.0-mock\n"
     exit 0
+fi
+
+# Log invocation arguments (one per line) if requested
+if [ -n "${MOCK_AIDER_INVOCATION_LOG:-}" ]; then
+    for _arg in "$@"; do
+        printf '%s\n' "$_arg"
+    done > "$MOCK_AIDER_INVOCATION_LOG"
 fi
 
 # Parse flags to find --llm-history-file

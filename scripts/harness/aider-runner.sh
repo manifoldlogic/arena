@@ -337,27 +337,22 @@ START_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 START_EPOCH=$(date +%s)
 
 # ---------------------------------------------------------------------------
-# Construct Aider command
+# Construct Aider command using positional parameters (safe from word splitting)
 # ---------------------------------------------------------------------------
-AIDER_CMD="$AIDER_BIN"
-AIDER_CMD="$AIDER_CMD --yes-always"
-AIDER_CMD="$AIDER_CMD --no-stream"
-AIDER_CMD="$AIDER_CMD --no-pretty"
-AIDER_CMD="$AIDER_CMD --no-fancy-input"
-AIDER_CMD="$AIDER_CMD --no-auto-lint"
-AIDER_CMD="$AIDER_CMD --no-auto-commits"
-AIDER_CMD="$AIDER_CMD --llm-history-file $OUTPUT_DIR/llm-history.txt"
-AIDER_CMD="$AIDER_CMD --model $MODEL"
-AIDER_CMD="$AIDER_CMD --edit-format $EDIT_FORMAT"
+set -- "$AIDER_BIN" --yes-always --no-stream --no-pretty --no-fancy-input \
+    --no-auto-lint --no-auto-commits \
+    --llm-history-file "$OUTPUT_DIR/llm-history.txt" \
+    --model "$MODEL" \
+    --edit-format "$EDIT_FORMAT"
 
 if [ -n "$MESSAGE" ]; then
-    AIDER_CMD="$AIDER_CMD --message $MESSAGE"
+    set -- "$@" --message "$MESSAGE"
 else
-    AIDER_CMD="$AIDER_CMD --message-file $MESSAGE_FILE"
+    set -- "$@" --message-file "$MESSAGE_FILE"
 fi
 
 if [ -n "$AIDER_TIMEOUT" ]; then
-    AIDER_CMD="$AIDER_CMD --timeout $AIDER_TIMEOUT"
+    set -- "$@" --timeout "$AIDER_TIMEOUT"
 fi
 
 # ---------------------------------------------------------------------------
@@ -367,9 +362,8 @@ cd "$CODEBASE_DIR"
 
 # Disable set -e for the invocation so we can capture the exit code
 set +e
-# shellcheck disable=SC2086
 timeout --kill-after=30 "$TIMEOUT" \
-    $AIDER_CMD \
+    "$@" \
     < /dev/null \
     > "$OUTPUT_DIR/stdout.log" \
     2> "$OUTPUT_DIR/stderr.log"

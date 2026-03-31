@@ -676,6 +676,68 @@ for _artifact in "stdout.log" "stderr.log" "llm-history.txt" "changes.diff" "met
     fi
 done
 
+printf "\n-- Message with spaces passed as single argument --\n"
+
+# Test that a multi-word --message is passed as a single argument to Aider
+rm -rf "$FAKE_OUTPUT"
+_invoc_log="$TEST_TMPDIR/invocation-spaces.log"
+env AIDER_BIN="$MOCK_AIDER" MOCK_AIDER_INVOCATION_LOG="$_invoc_log" \
+    sh "$RUNNER" \
+    --codebase-dir "$FAKE_CODEBASE" --output-dir "$FAKE_OUTPUT" \
+    --message "fix the bug here" --timeout 60 --model gpt-4 \
+    >/dev/null 2>&1 || true
+
+assert_file_exists "invocation log exists (message with spaces)" "$_invoc_log"
+
+# The --message flag should be followed by "fix the bug here" as one line
+# (not split into "fix", "the", "bug", "here" on separate lines)
+_msg_line=$(grep -A1 '^--message$' "$_invoc_log" | tail -1)
+if [ "$_msg_line" = "fix the bug here" ]; then
+    printf "  PASS: --message value with spaces passed as single argument\n"
+    PASS_COUNT=$((PASS_COUNT + 1))
+else
+    printf "  FAIL: --message value split incorrectly (got '%s')\n" "$_msg_line" >&2
+    FAIL_COUNT=$((FAIL_COUNT + 1))
+fi
+
+# Verify the invocation log does NOT contain "fix" as a standalone line
+# (which would indicate word splitting happened)
+if grep -qx "fix" "$_invoc_log" 2>/dev/null; then
+    printf "  FAIL: word splitting detected ('fix' is a standalone argument)\n" >&2
+    FAIL_COUNT=$((FAIL_COUNT + 1))
+else
+    printf "  PASS: no word splitting detected in message argument\n"
+    PASS_COUNT=$((PASS_COUNT + 1))
+fi
+
+printf "\n-- Output-dir path with spaces --\n"
+
+# Test that --output-dir with spaces in the path works correctly
+SPACE_OUTPUT="$TEST_TMPDIR/my output dir"
+mkdir -p "$SPACE_OUTPUT"
+rm -rf "$SPACE_OUTPUT"/*
+
+_space_exit=0
+env AIDER_BIN="$MOCK_AIDER" \
+    sh "$RUNNER" \
+    --codebase-dir "$FAKE_CODEBASE" --output-dir "$SPACE_OUTPUT" \
+    --message "hello" --timeout 60 --model gpt-4 \
+    >/dev/null 2>&1 || _space_exit=$?
+
+if [ "$_space_exit" -eq 0 ]; then
+    printf "  PASS: runner exits 0 with spaces in output-dir path\n"
+    PASS_COUNT=$((PASS_COUNT + 1))
+else
+    printf "  FAIL: runner should exit 0 with spaces in output-dir, got %d\n" "$_space_exit" >&2
+    FAIL_COUNT=$((FAIL_COUNT + 1))
+fi
+
+assert_file_exists "stdout.log exists (space in output-dir)" "$SPACE_OUTPUT/stdout.log"
+assert_file_exists "stderr.log exists (space in output-dir)" "$SPACE_OUTPUT/stderr.log"
+assert_file_exists "metadata.json exists (space in output-dir)" "$SPACE_OUTPUT/metadata.json"
+assert_valid_json "metadata.json valid JSON (space in output-dir)" "$SPACE_OUTPUT/metadata.json"
+assert_json_field "exit_code 0 (space in output-dir)" "$SPACE_OUTPUT/metadata.json" ".exit_code" "0"
+
 printf "\n-- shellcheck --\n"
 
 # Run shellcheck on aider-runner.sh
