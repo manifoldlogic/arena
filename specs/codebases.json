@@ -26,6 +26,16 @@
       "language": "Python",
       "approx_files": 2800,
       "phases": [1]
+    },
+    {
+      "name": "clap",
+      "submodule_path": "codebases/clap",
+      "remote_url": "https://github.com/clap-rs/clap.git",
+      "pinned_commit": "9ab6dee710aa384e02ec5e9e2cfeadb2f35abf2a",
+      "language": "Rust",
+      "approx_files": 350,
+      "phases": [],
+      "competition_types": ["bug-fix"]
     }
   ]
 }
