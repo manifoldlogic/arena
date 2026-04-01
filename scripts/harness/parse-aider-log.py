@@ -217,6 +217,7 @@ def parse_log(input_path: Path) -> dict:  # noqa: C901
     current_turn: _Turn | None = None
     in_response_section = False
     response_lines: list[list[str]] = []  # per-turn response content
+    llm_response_sections = 0  # count by header, not buffered content
     current_response_buf: list[str] = []
 
     total_input_tokens: int | None = None
@@ -249,6 +250,7 @@ def parse_log(input_path: Path) -> dict:  # noqa: C901
                     if current_turn is not None:
                         current_turn.finalize()
                     in_response_section = True
+                    llm_response_sections += 1
                     current_response_buf = []
                     continue
 
@@ -304,7 +306,7 @@ def parse_log(input_path: Path) -> dict:  # noqa: C901
     # --- Check for truncation (TO LLM without matching LLM RESPONSE) ---
     # Count TO LLM and LLM RESPONSE occurrences
     to_llm_count = len(turns)
-    llm_resp_count = len(response_lines)
+    llm_resp_count = llm_response_sections
     if to_llm_count > llm_resp_count:
         warnings.append(
             f"Truncated input: {to_llm_count} TO LLM section(s) but only "

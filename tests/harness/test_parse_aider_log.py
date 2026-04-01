@@ -828,7 +828,7 @@ class TestCLI:
         )
         assert result.returncode == 0
 
-    def test_missing_input_exits_one(self) -> None:
+    def test_missing_input_exits_one(self, tmp_path: Path) -> None:
         result = subprocess.run(
             [
                 sys.executable,
@@ -836,7 +836,7 @@ class TestCLI:
                 "--input",
                 "/nonexistent/path.txt",
                 "--output",
-                "/tmp/nope.json",
+                str(tmp_path / "nope.json"),
             ],
             capture_output=True,
             text=True,
@@ -1002,8 +1002,10 @@ class TestMainDirect:
         data = json.loads(out.read_text())
         assert data["llm_turns"] == 1
 
-    def test_main_file_not_found(self) -> None:
-        rc = main(["--input", "/nonexistent.txt", "--output", "/tmp/out.json"])
+    def test_main_file_not_found(self, tmp_path: Path) -> None:
+        rc = main(
+            ["--input", "/nonexistent.txt", "--output", str(tmp_path / "out.json")]
+        )
         assert rc == 1
 
     def test_main_output_write_error(self) -> None:
