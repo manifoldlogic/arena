@@ -50,6 +50,9 @@ _analyse_assistant_blocks = mod._analyse_assistant_blocks
 # ---------------------------------------------------------------------------
 
 
+_temp_files: list[Path] = []
+
+
 def _write_tmp(content: str | bytes, suffix: str = ".txt") -> Path:
     """Write *content* to a temp file and return its path."""
     mode = "wb" if isinstance(content, bytes) else "w"
@@ -59,7 +62,18 @@ def _write_tmp(content: str | bytes, suffix: str = ".txt") -> Path:
     )
     f.write(content)
     f.close()
-    return Path(f.name)
+    p = Path(f.name)
+    _temp_files.append(p)
+    return p
+
+
+@pytest.fixture(autouse=True)
+def _cleanup_temp_files():
+    """Remove temp files created by _write_tmp after each test."""
+    yield
+    for p in _temp_files:
+        p.unlink(missing_ok=True)
+    _temp_files.clear()
 
 
 # ---------------------------------------------------------------------------
@@ -1153,7 +1167,7 @@ class TestAnalyseAssistantBlocks:
             "The code looks correct.",
             "No changes needed.",
         ]
-        edits, fmts, files, reasoning, errors = _analyse_assistant_blocks([block])
+        edits, _fmts, _files, reasoning, _errors = _analyse_assistant_blocks([block])
         assert edits == 0
         assert len(reasoning) == 1
         assert "correct" in reasoning[0].lower()
@@ -1180,7 +1194,7 @@ class TestAnalyseAssistantBlocks:
             "Error: the file was not found.",
             "I cannot proceed without it.",
         ]
-        edits, fmts, files, reasoning, errors = _analyse_assistant_blocks([block])
+        _edits, _fmts, _files, _reasoning, errors = _analyse_assistant_blocks([block])
         assert len(errors) == 2
 
     def test_code_fence_without_search_replace(self) -> None:
@@ -1191,7 +1205,7 @@ class TestAnalyseAssistantBlocks:
             "print('hello')",
             "```",
         ]
-        edits, fmts, files, reasoning, errors = _analyse_assistant_blocks([block])
+        edits, _fmts, _files, _reasoning, _errors = _analyse_assistant_blocks([block])
         assert edits == 0
 
     def test_filename_cleared_by_non_filename_text(self) -> None:
@@ -1217,7 +1231,7 @@ class TestAnalyseAssistantBlocks:
     def test_empty_block_content(self) -> None:
         """A block with only empty lines should produce no reasoning."""
         block = ["", "  ", ""]
-        edits, fmts, files, reasoning, errors = _analyse_assistant_blocks([block])
+        edits, _fmts, _files, reasoning, _errors = _analyse_assistant_blocks([block])
         assert edits == 0
         assert reasoning == []
 

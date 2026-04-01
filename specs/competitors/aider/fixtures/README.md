@@ -18,13 +18,13 @@ markers as was initially assumed in planning documents. The actual format is:
 
 ### Section Headers
 
-```
+```text
 TO LLM <ISO-8601-timestamp>
 ```
 
 Marks the beginning of a message block sent to the LLM.
 
-```
+```text
 LLM RESPONSE <ISO-8601-timestamp>
 ```
 
@@ -45,7 +45,7 @@ Blank continuation lines within a role block use the prefix alone (e.g., `SYSTEM
 
 ### Separators
 
-```
+```text
 -------
 ```
 
@@ -53,7 +53,7 @@ A line of seven hyphens separates role blocks within a `TO LLM` section.
 
 ### Structure Summary
 
-```
+```text
 TO LLM <timestamp>
 -------
 SYSTEM <system prompt line 1>

@@ -715,7 +715,7 @@ printf "\n-- Output-dir path with spaces --\n"
 # Test that --output-dir with spaces in the path works correctly
 SPACE_OUTPUT="$TEST_TMPDIR/my output dir"
 mkdir -p "$SPACE_OUTPUT"
-rm -rf "$SPACE_OUTPUT"/*
+rm -rf "${SPACE_OUTPUT:?}"/*
 
 _space_exit=0
 env AIDER_BIN="$MOCK_AIDER" \

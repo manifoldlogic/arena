@@ -153,7 +153,7 @@ def _analyse_assistant_blocks(
         has_search_replace = False
         pending_filename: str | None = None
 
-        for i, raw_line in enumerate(block):
+        for raw_line in block:
             line = raw_line
 
             # Track code fences
