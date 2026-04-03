@@ -28,8 +28,6 @@ FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures"
 
 # Import the parser module directly so we can unit-test internal functions.
 # We need importlib because the filename contains a hyphen.
-sys.path.insert(0, str(PARSER_SCRIPT.parent))
-
 _spec = importlib.util.spec_from_file_location("parse_aider_log", PARSER_SCRIPT)
 assert _spec is not None and _spec.loader is not None
 mod = importlib.util.module_from_spec(_spec)
