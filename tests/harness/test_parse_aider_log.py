@@ -1185,7 +1185,7 @@ class TestAnalyseAssistantBlocks:
             ">>>>>>> REPLACE",
             "```",
         ]
-        edits, fmts, files, reasoning, errors = _analyse_assistant_blocks([block])
+        edits, _fmts, files, _reasoning, _errors = _analyse_assistant_blocks([block])
         assert edits == 1
         assert "app.py" in files
 
@@ -1222,7 +1222,7 @@ class TestAnalyseAssistantBlocks:
             ">>>>>>> REPLACE",
             "```",
         ]
-        edits, fmts, files, reasoning, errors = _analyse_assistant_blocks([block])
+        edits, _fmts, files, _reasoning, _errors = _analyse_assistant_blocks([block])
         assert edits == 1
         # The filename should NOT be in files_referenced because it was
         # cleared by the intervening text line
@@ -1250,7 +1250,7 @@ class TestAnalyseAssistantBlocks:
             ">>>>>>> REPLACE",
             "```",
         ]
-        edits, fmts, files, reasoning, errors = _analyse_assistant_blocks(
+        edits, _fmts, files, reasoning, _errors = _analyse_assistant_blocks(
             [block1, block2]
         )
         assert edits == 1
