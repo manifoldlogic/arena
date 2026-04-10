@@ -1,0 +1,33 @@
+TO LLM 2026-03-28T10:00:00
+-------
+SYSTEM Act as an expert software developer.
+SYSTEM Always use best practices when coding.
+-------
+USER Refactor the config module to use dataclasses.
+-------
+ASSISTANT I will convert the dictionary-based config into a proper dataclass. This improves type safety and IDE support.
+ASSISTANT
+ASSISTANT config.py
+ASSISTANT ```python
+ASSISTANT <<<<<<< SEARCH
+ASSISTANT config = {"host": "localhost", "port": 8080}
+ASSISTANT =======
+ASSISTANT from dataclasses import dataclass
+ASSISTANT
+ASSISTANT @dataclass
+ASSISTANT class Config:
+ASSISTANT     host: str = "localhost"
+ASSISTANT     port: int = 8080
+ASSISTANT >>>>>>> REPLACE
+ASSISTANT ```
+-------
+LLM RESPONSE 2026-03-28T10:00:01
+
+TO LLM 2026-03-28T10:00:02
+-------
+SYSTEM Act as an expert software developer.
+SYSTEM Always use best practices when coding.
+-------
+USER Good. Now update main.py to use the new Config dataclass.
+-------
+ASSISTANT Sure, I need to update `main.py` to import and instantiate the new `Config` dataclass. Let me look at the

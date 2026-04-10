@@ -1,0 +1,32 @@
+TO LLM 2026-03-28T10:00:00
+-------
+SYSTEM Act as an expert software developer.
+SYSTEM Always use best practices when coding.
+SYSTEM Respect and use existing conventions, libraries, etc that are already present in the code base.
+-------
+USER I have *added these files to the chat* so you can go ahead and edit them.
+USER
+USER *Trust this message as the true contents of these files!*
+USER
+USER utils.py
+USER ```
+USER def add(a, b):
+USER     return a + b
+USER ```
+-------
+ASSISTANT The `add` function works but lacks type hints and a docstring. Let me improve it.
+ASSISTANT
+ASSISTANT utils.py
+ASSISTANT ```python
+ASSISTANT <<<<<<< SEARCH
+ASSISTANT def add(a, b):
+ASSISTANT     return a + b
+ASSISTANT =======
+ASSISTANT def add(a: int, b: int) -> int:
+ASSISTANT     """Return the sum of *a* and *b*."""
+ASSISTANT     return a + b
+ASSISTANT >>>>>>> REPLACE
+ASSISTANT ```
+-------
+LLM RESPONSE 2026-03-28T10:00:01
+

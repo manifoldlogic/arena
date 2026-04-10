@@ -1,0 +1,13 @@
+TO LLM 2026-03-28T10:00:00
+-------
+SYSTEM Act as an expert software developer.
+SYSTEM Always use best practices when coding.
+-------
+USER Update the database migration in migrations/002_add_users.py to add an email column.
+-------
+ASSISTANT Error: I cannot find the file `migrations/002_add_users.py` in the files you have shared with me. Failed to apply the edit because the target file is not in the chat.
+ASSISTANT
+ASSISTANT Please add `migrations/002_add_users.py` to the chat so I can propose the necessary changes. I am unable to edit files that have not been shared.
+-------
+LLM RESPONSE 2026-03-28T10:00:01
+
