@@ -842,9 +842,8 @@ class TestCLI:
         assert result.returncode == 1
         assert "does not exist" in result.stderr
 
-    def test_fixture_produces_valid_json(self) -> None:
-        with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:
-            out = Path(f.name)
+    def test_fixture_produces_valid_json(self, tmp_path: Path) -> None:
+        out = tmp_path / "fixture-out.json"
         result = subprocess.run(
             [
                 sys.executable,
@@ -992,9 +991,8 @@ class TestMultipleErrorPatterns:
 class TestMainDirect:
     """Test main() called directly (not via subprocess) for coverage."""
 
-    def test_main_success(self) -> None:
-        with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:
-            out = Path(f.name)
+    def test_main_success(self, tmp_path: Path) -> None:
+        out = tmp_path / "main-success.json"
         rc = main(["--input", str(FIXTURE), "--output", str(out)])
         assert rc == 0
         data = json.loads(out.read_text())
@@ -1006,21 +1004,21 @@ class TestMainDirect:
         )
         assert rc == 1
 
-    def test_main_output_write_error(self) -> None:
-        # Attempt to write to a directory that doesn't exist
+    def test_main_output_write_error(self, tmp_path: Path) -> None:
+        # Attempt to write into a non-existent nested directory under tmp_path
+        out = tmp_path / "nonexistent_dir" / "impossible" / "out.json"
         rc = main(
             [
                 "--input",
                 str(FIXTURE),
                 "--output",
-                "/nonexistent_dir/impossible/out.json",
+                str(out),
             ]
         )
         assert rc == 1
 
-    def test_main_with_fixture_simple(self) -> None:
-        with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:
-            out = Path(f.name)
+    def test_main_with_fixture_simple(self, tmp_path: Path) -> None:
+        out = tmp_path / "fixture-simple-out.json"
         rc = main(
             [
                 "--input",
